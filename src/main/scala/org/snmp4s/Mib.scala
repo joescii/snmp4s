@@ -29,7 +29,9 @@ trait MibObject[T] extends (Oid => MibObject[T]) {
 }
 
 trait Readable[T] extends MibObject[T]
-trait Writable[T] extends MibObject[T]
+trait Writable[T] extends MibObject[T] {
+  def to(v:T) = SetObj(this, v)
+}
 
 sealed trait MaxAccess
 trait NoAccess extends MaxAccess
@@ -40,3 +42,6 @@ class MibObjectInst[T](val oid:Oid, val name:String) extends MibObject[T] with E
   def apply(index:Oid) = new MibObjectInst[T](oid ++ index, name+"."+oid.mkString("."))
   
 }
+
+case class SetObj[T](val obj:Writable[T], val v:T)
+

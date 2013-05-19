@@ -39,11 +39,11 @@ class Snmp(val ip:String, val port:Int, val read:String, val write:String) {
     }
   }
 
-  def set[T](obj:Writable[T], v:T)(implicit m:Manifest[T]):Option[String] = {    
+  def set[T](set:SetObj[T])(implicit m:Manifest[T]):Option[String] = {    
     if(m.runtimeClass == classOf[Int]){
       val pdu = new PDU
-      val vb = new VariableBinding(new OID(obj.oid.toArray))
-      vb.setVariable(new Integer32(v.asInstanceOf[Int]))
+      val vb = new VariableBinding(new OID(set.obj.oid.toArray))
+      vb.setVariable(new Integer32(set.v.asInstanceOf[Int]))
       pdu.add(vb)
       pdu.setType(PDU.SET)
 
