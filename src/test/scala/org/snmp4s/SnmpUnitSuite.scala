@@ -4,7 +4,7 @@ import org.scalatest.{WordSpec}
 import org.scalatest.matchers.{ShouldMatchers}
 import Mib._
 
-class SnmpSuite extends WordSpec with ShouldMatchers {
+class SnmpUnitSuite extends WordSpec with ShouldMatchers {
   val snmp = new Snmp
   case object myNoAccessOid extends MibObjectInst[Int](Seq(1,2,3,4), "myNoAccessOid") with NoAccess
   case object myReadOnlyOid extends MibObjectInst[Int](Seq(1,2,3,4,1), "myReadOnlyOid") with ReadOnly[Int]
