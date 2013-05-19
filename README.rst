@@ -1,6 +1,6 @@
-**snmp4s** is an idiomatic, type safe Scala wrapper on top of Snmp4j.  The manifest vision for Snmp4s
+**SNMP4S** is an idiomatic, type safe Scala wrapper on top of `SNMP4J`_.  The manifest vision for SNMP4S
 is that an SBT project will have MIBs as a source, which get compiled into Scala
-objects.  The compiled MIBs along with the base Snmp4s libraries will form a powerful
+objects.  The compiled MIBs along with the base SNMP4S libraries will form a powerful
 DSL for manipulating SNMP data.  Example code::
 
   // Instantiate a new Snmp object with defaults for IP, port, community, etc.
@@ -35,4 +35,5 @@ Copyright 2013 org.snmp4s
    See the License for the specific language governing permissions and
    limitations under the License.
 
+.. _SNMP4J: http://www.snmp4j.org/
 .. _APL 2.0: http://www.apache.org/licenses/LICENSE-2.0
