@@ -28,8 +28,8 @@ trait MibObject[T] extends (Oid => MibObject[T]) {
   }
 }
 
-trait Readable[T]
-trait Writable[T]
+trait Readable[T] extends MibObject[T]
+trait Writable[T] extends MibObject[T]
 
 sealed trait MaxAccess
 trait NoAccess extends MaxAccess
