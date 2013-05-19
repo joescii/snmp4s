@@ -6,7 +6,7 @@ import org.scalatest.matchers.{ShouldMatchers}
 import Mib._
 
 class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
-  val snmp = new Snmp("127.0.0.1", 161, "public", "private")
+  val snmp = new Snmp
   case object agentppSimMode extends MibObjectInst[Int](Seq(1,3,6,1,4,1,4976,2,1,1,0), "agentppSimMode") with ReadWrite[Int]
   
   var ta:Option[TestAgent] = None

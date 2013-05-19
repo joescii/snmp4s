@@ -5,7 +5,15 @@ import org.snmp4j.mp.SnmpConstants
 import org.snmp4j.smi.{ GenericAddress, OctetString, VariableBinding, OID, Integer32 }
 import org.snmp4j.transport.DefaultUdpTransportMapping
 
-class Snmp(val ip:String, val port:Int, val read:String, val write:String) {
+class Snmp(
+    val ip:String = "127.0.0.1", 
+    val port:Int = 161, 
+    val read:String = "public", 
+    val write:String = "private",
+    val version:Int = SnmpConstants.version1,
+    val retries:Int = 2,
+    val timeout:Long = 1500) {
+  
   private val addr = GenericAddress.parse(s"udp:$ip/$port")
   private val map  = new DefaultUdpTransportMapping
   private val snmp = new Snmp4j(map)
@@ -15,9 +23,9 @@ class Snmp(val ip:String, val port:Int, val read:String, val write:String) {
     val target = new CommunityTarget
     target.setCommunity(new OctetString(read))
     target.setAddress(addr)
-    target.setRetries(2)
-    target.setTimeout(1500)
-    target.setVersion(SnmpConstants.version1)
+    target.setRetries(retries)
+    target.setTimeout(timeout)
+    target.setVersion(version)
     target
   }
   

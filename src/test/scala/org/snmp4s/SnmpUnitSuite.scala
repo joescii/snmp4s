@@ -6,7 +6,6 @@ import org.snmp4j.{Snmp => Snmp4j}
 import Mib._
 
 class SnmpUnitSuite extends WordSpec with ShouldMatchers {
-  val snmp = new Snmp("127.0.0.1", 161, "public", "private")
   case object myNoAccessOid extends MibObjectInst[Int](Seq(1,2,3,4), "myNoAccessOid") with NoAccess
   case object myReadOnlyOid extends MibObjectInst[Int](Seq(1,2,3,4,1), "myReadOnlyOid") with ReadOnly[Int]
   case object myReadWriteOid extends MibObjectInst[Int](Seq(1,2,3,4,2), "myReadWriteOid") with ReadWrite[Int]
