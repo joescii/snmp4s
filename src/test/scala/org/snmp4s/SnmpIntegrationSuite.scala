@@ -1,13 +1,24 @@
 package org.snmp4s
 
-import org.scalatest.{WordSpec}
+import java.io.File
+import org.scalatest.{WordSpec, BeforeAndAfter}
 import org.scalatest.matchers.{ShouldMatchers}
-import org.snmp4j.{Snmp => Snmp4j}
 import Mib._
 
-class SnmpIntegrationSuite extends WordSpec with ShouldMatchers {
+class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
   val snmp = new Snmp("127.0.0.1", 161, "public", "private")
   case object agentppSimMode extends MibObjectInst[Int](Seq(1,3,6,1,4,1,4976,2,1,1,0), "agentppSimMode") with ReadWrite[Int]
+  
+  var ta:Option[TestAgent] = None
+  
+  before {
+    ta = Some(TestAgent.start("127.0.0.1/161"))
+  }
+  
+  after {
+    ta map ( _.stop )
+    ta = None
+  }
   
   "An Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {

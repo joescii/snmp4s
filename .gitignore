@@ -14,3 +14,6 @@ project/plugins/project/
 .classpath
 .project
 .settings/
+
+# Snmp4j stuff
+SNMP4JTestAgentBC.cfg
