@@ -16,6 +16,8 @@ object Mib {
     * Implicit conversion from a single Int to an Oid. 
     */
   implicit def Int2Oid(i:Int):Oid = Seq(i)
+  
+  implicit def Tuple2VarBind[T](v:(Writable[T], T)):VarBind[T] = VarBind(v._1, v._2)
 }
 
 import Mib._
@@ -65,7 +67,7 @@ trait Writable[T] extends MibObject[T] {
   /**
     * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.
     */
-  def to(v:T) = VarBind(this, v)
+  def to(v:T):VarBind[T] = (this, v)
 }
 
 /**
