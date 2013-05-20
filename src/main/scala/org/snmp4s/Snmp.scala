@@ -1,7 +1,6 @@
 package org.snmp4s
 
 import org.snmp4j.{ Snmp => Snmp4j, CommunityTarget, PDU }
-import org.snmp4j.mp.SnmpConstants
 import org.snmp4j.smi.{ GenericAddress, OctetString, VariableBinding, OID, Integer32 }
 import org.snmp4j.transport.DefaultUdpTransportMapping
 
@@ -10,7 +9,7 @@ class Snmp(
     val port:Int = 161, 
     val read:String = "public", 
     val write:String = "private",
-    val version:Int = SnmpConstants.version1,
+    val version:Version = Version1,
     val retries:Int = 2,
     val timeout:Long = 1500) {
   
@@ -25,7 +24,7 @@ class Snmp(
     target.setAddress(addr)
     target.setRetries(retries)
     target.setTimeout(timeout)
-    target.setVersion(version)
+    target.setVersion(version.enum)
     target
   }
   

@@ -1,11 +1,18 @@
 package org.snmp4s
 
+import org.snmp4j.mp.SnmpConstants
+
 object Mib {
   type Oid = Seq[Int]
   implicit def Int2Oid(i:Int):Oid = Seq(i)
 }
 
 import Mib._
+
+sealed trait Version { def enum:Int }
+case object Version1  extends Version { override def enum = SnmpConstants.version1 }
+case object Version2c extends Version { override def enum = SnmpConstants.version2c }
+case object Version3  extends Version { override def enum = SnmpConstants.version3 }
 
 trait MibObject[T] extends (Oid => MibObject[T]) {
   def oid():Oid
