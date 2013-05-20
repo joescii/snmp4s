@@ -63,9 +63,9 @@ trait Readable[T] extends MibObject[T]
 trait Writable[T] extends MibObject[T] {
   
   /**
-    * Returns a <code>SetObj</code> to be passed to <code>Snmp.set</code>.
+    * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.
     */
-  def to(v:T) = SetObj(this, v)
+  def to(v:T) = VarBind(this, v)
 }
 
 /**
@@ -100,5 +100,5 @@ class MibObjectInst[T](val oid:Oid, val name:String) extends MibObject[T] with E
   * Wrapper of a <code>MibObject</code> and it's respective value for
   * use as a SNMP set request. 
   */
-case class SetObj[T](val obj:Writable[T], val v:T)
+case class VarBind[T](val obj:Writable[T], val v:T)
 

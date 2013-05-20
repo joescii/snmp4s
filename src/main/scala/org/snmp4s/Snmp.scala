@@ -46,7 +46,7 @@ class Snmp(
     }
   }
 
-  def set[T](set:SetObj[T])(implicit m:Manifest[T]):Option[String] = {    
+  def set[T](set:VarBind[T])(implicit m:Manifest[T]):Option[String] = {    
     if(m.runtimeClass == classOf[Int]){
       val pdu = new PDU
       val vb = new VariableBinding(new OID(set.obj.oid.toArray))
