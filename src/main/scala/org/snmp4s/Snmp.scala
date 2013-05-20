@@ -61,6 +61,9 @@ class Snmp(
     else {
       Some("Unsupported syntax")
     }
-    
+  }
+  
+  def walk[T](obj:Readable[T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[T]] = {
+    Left("Crap")
   }
 }

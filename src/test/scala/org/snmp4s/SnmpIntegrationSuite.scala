@@ -32,5 +32,9 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       snmp.set(agentppSimMode to 1) should equal (None)
       snmp.get(agentppSimMode) should equal (Right(1))
     }
+    
+    "be able to walk something" in {
+      snmp.walk(agentppSimMode) should equal (Left("Crap"))
+    }
   }
 }
