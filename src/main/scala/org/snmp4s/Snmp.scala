@@ -63,7 +63,7 @@ class Snmp(
     }
   }
   
-  def walk[T](obj:AccessibleObject[ReadOnly, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[ReadOnly, T]]] = {
+  def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[A, T]]] = {
     Left("Crap")
   }
 }

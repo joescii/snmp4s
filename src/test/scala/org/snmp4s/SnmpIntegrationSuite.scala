@@ -8,8 +8,8 @@ import Mib._
 class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
   val snmp = new Snmp
   case object agentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
-  
   case object ifIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
+  case object ifAdminStatus  extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
   
   var ta:Option[TestAgent] = None
   
@@ -43,6 +43,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     
     "be able to walk something" in {
       walk(ifIndex) should equal (Left("Crap")) // (Right(Seq(ifIndex(1) vb 1)))
+      walk(ifAdminStatus) should equal (Left("Crap"))
     }
   }
 }
