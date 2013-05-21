@@ -26,14 +26,8 @@ object Mib {
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
-  implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A]):DataObject[A, T] = 
+  implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A, T]):DataObject[A, T] = 
     new DataObjectInst[A, T](s.oid ++ 0, s.name+".0")
-
-  /**
-    * Implicit conversion that allows us to drop the default index (0) from scalars.
-    */
-  implicit def ReadableScalar2DataObjectWithReadable[A <: MaxAccess, T](s:Scalar[A] with ReadWrite):DataObject[A, T] =
-    new DataObjectInst[A, T](s.oid ++ 0, s.name+".0") 
 }
 
 import Mib._
@@ -129,7 +123,7 @@ class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String)
   * snmp.set(agentppSimMode to 2)
   * </code> 
   */
-trait Scalar[A <: MaxAccess] extends MibObject[A] 
+trait Scalar[A <: MaxAccess, T] extends MibObject[A] 
 
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
