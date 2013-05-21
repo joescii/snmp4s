@@ -9,6 +9,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   val snmp = new Snmp
   case object agentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
   case object ifIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
+  case object ifDescr		 extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
   case object ifAdminStatus  extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
   
   var ta:Option[TestAgent] = None
@@ -41,6 +42,11 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       get(ifIndex(1)) should equal (Right(1))
     }
     
+    "be able to get String syntax OID ifDescr" in {
+      get(ifDescr(1)) should equal (Right("eth0"))
+      get(ifDescr(2)) should equal (Right("loopback"))
+    }
+    
     "be able to walk on Read-Only OID ifIndex" in {
       walk(ifIndex) should equal (Right(Seq(
         ifIndex(1) vb 1,
@@ -52,6 +58,13 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       walk(ifAdminStatus) should equal (Right(Seq(
         ifAdminStatus(1) vb 1,
         ifAdminStatus(2) vb 1
+      )))
+    }
+    
+    "be able to walk on String syntax OID ifDescr" in {
+      walk(ifDescr) should equal (Right(Seq(
+        ifDescr(1) vb "eth0",
+        ifDescr(2) vb "loopback"
       )))
     }
   }

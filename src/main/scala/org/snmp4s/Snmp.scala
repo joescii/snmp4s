@@ -81,10 +81,13 @@ class Snmp(
   
   // TODO: Handle other types
   private def cast[T](v:Variable)(implicit m:Manifest[T]):T = {
-    if (m.runtimeClass == classOf[Int]) {
+    val c = m.runtimeClass
+    if (c == classOf[Int]) 
       v.toInt().asInstanceOf[T]
-    } else {
+    else if(c == classOf[String])
+      v.toString().asInstanceOf[T]
+    else
       1.asInstanceOf[T]
-    }
+    
   }
 }
