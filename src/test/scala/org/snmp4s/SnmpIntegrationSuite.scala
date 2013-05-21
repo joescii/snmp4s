@@ -22,21 +22,23 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     ta = None
   }
   
+  import snmp._
+  
   "An Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
-      snmp.get(agentppSimMode(0)) should equal (Right(1))
+      get(agentppSimMode(0)) should equal (Right(1))
     }
     
     "be able to set value 2 on agentppSimMode, read it back, and set it back to 1 on our simulator" in {
-      snmp.get(agentppSimMode) should equal (Right(1))
-      snmp.set(agentppSimMode to 2) should equal (None)
-      snmp.get(agentppSimMode) should equal (Right(2))
-      snmp.set(agentppSimMode to 1) should equal (None)
-      snmp.get(agentppSimMode) should equal (Right(1))
+      get(agentppSimMode) should equal (Right(1))
+      set(agentppSimMode to 2) should equal (None)
+      get(agentppSimMode) should equal (Right(2))
+      set(agentppSimMode to 1) should equal (None)
+      get(agentppSimMode) should equal (Right(1))
     }
     
     "be able to walk something" in {
-      snmp.walk(ifIndex) should equal (Left("Crap")) // (Right(Seq(ifIndex(1) vb 1)))
+      walk(ifIndex) should equal (Left("Crap")) // (Right(Seq(ifIndex(1) vb 1)))
     }
   }
 }
