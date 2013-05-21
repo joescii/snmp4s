@@ -29,12 +29,16 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       get(agentppSimMode(0)) should equal (Right(1))
     }
     
-    "be able to set value 2 on agentppSimMode, read it back, and set it back to 1 on our simulator" in {
+    "be able to set value 2 on Read-Write OID agentppSimMode, read it back, and set it back to 1 on our simulator" in {
       get(agentppSimMode) should equal (Right(1))
       set(agentppSimMode to 2) should equal (None)
       get(agentppSimMode) should equal (Right(2))
       set(agentppSimMode to 1) should equal (None)
       get(agentppSimMode) should equal (Right(1))
+    }
+    
+    "be able to get Read-Only OID ifIndex.1" in {
+      get(ifIndex(1)) should equal (Right(1))
     }
     
     "be able to walk something" in {

@@ -28,7 +28,7 @@ class Snmp(
     target
   }
   
-  def get[T](obj:DataObject[ReadWrite, T])(implicit m:Manifest[T]):Either[String,T] = {
+  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[String,T] = {
     val pdu = new PDU
     pdu.add(new VariableBinding(new OID(obj.oid.toArray)))
     pdu.setType(PDU.GET)

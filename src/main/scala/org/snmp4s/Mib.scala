@@ -85,6 +85,9 @@ trait DataObject[A <: MaxAccess, T] extends MibObject[A] {
   */
 sealed trait MaxAccess
 
+protected trait Readable extends MaxAccess
+protected trait Writable extends MaxAccess
+
 /**
   * A MIB object with MAX-ACCESS "Not-accessible"
   */
@@ -98,22 +101,22 @@ trait AccessibleForNotify extends MaxAccess
 /**
   * A MIB object with MAX-ACCESS "Read-only"
   */
-trait ReadOnly extends MaxAccess 
+trait ReadOnly extends MaxAccess with Readable
 
 /**
   * A MIB object with MAX-ACCESS "Read-write"
   */
-trait ReadWrite extends MaxAccess
+trait ReadWrite extends MaxAccess with Readable with Writable
 
 /**
   * A MIB object with MAX-ACCESS "Write-only"
   */
-trait WriteOnly extends MaxAccess 
+trait WriteOnly extends MaxAccess with Writable
 
 /**
   * A MIB object with MAX-ACCESS "Read-create"
   */
-trait ReadCreate extends MaxAccess 
+trait ReadCreate extends MaxAccess with Readable with Writable
 
 /**
   * A MIB object with MAX-ACCESS "Read-only"
