@@ -70,7 +70,7 @@ public class TestAgent extends BaseAgent {
 
   protected void registerManagedObjects() {
     try {
-//      server.register(createStaticIfTable(), null);
+      server.register(createStaticIfTable(), null);
       agentppSimulationMIB.registerMOs(server, null);
       heartbeatMIB.registerMOs(server, null);
     }
@@ -334,7 +334,7 @@ public class TestAgent extends BaseAgent {
   }
 
 /* This code illustrates how a table can be created and filled with static
-data:
+data: */
 
   private static DefaultMOTable createStaticIfTable() {
     MOTableSubIndex[] subIndexes =
@@ -395,7 +395,7 @@ data:
     ifTable.setVolatile(true);
     return ifTable;
   }
-*/
+
   protected void initTransportMappings() throws IOException {
     transportMappings = new TransportMapping[1];
     Address addr = GenericAddress.parse(address);
