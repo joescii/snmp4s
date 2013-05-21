@@ -1,7 +1,7 @@
 package org.snmp4s
 
 import org.snmp4j.{ Snmp => Snmp4j, CommunityTarget, PDU }
-import org.snmp4j.smi.{ GenericAddress, OctetString, VariableBinding, OID, Integer32 }
+import org.snmp4j.smi.{ GenericAddress, OctetString, VariableBinding, OID, Integer32, Variable }
 import org.snmp4j.transport.DefaultUdpTransportMapping
 import org.snmp4j.util.TreeUtils
 import org.snmp4j.util.DefaultPDUFactory
@@ -44,13 +44,8 @@ class Snmp(
     val res = event.getResponse
     val vb = res.get(0)
     val v = vb.getVariable
-    
-    // TODO: Handle other types
-    if(m.runtimeClass == classOf[Int]) {
-      Right(v.toInt().asInstanceOf[T])
-    } else { 
-      Right(1.asInstanceOf[T])
-    }
+
+    Right(cast(v))
   }
 
   def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[String] = {    
@@ -78,14 +73,18 @@ class Snmp(
     } yield {
       val o:Oid = vb.getOid()
       val v = vb.getVariable
-      val cast = if (m.runtimeClass == classOf[Int]) {
-        v.toInt().asInstanceOf[T]
-      } else {
-        1.asInstanceOf[T]
-      }
-      VarBind(obj(o.last), cast)
+      VarBind(obj(o.last), cast(v))
     }
     
     Right(vbs)
+  }
+  
+  // TODO: Handle other types
+  private def cast[T](v:Variable)(implicit m:Manifest[T]):T = {
+    if (m.runtimeClass == classOf[Int]) {
+      v.toInt().asInstanceOf[T]
+    } else {
+      1.asInstanceOf[T]
+    }
   }
 }
