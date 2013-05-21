@@ -32,8 +32,8 @@ object Mib {
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
-  implicit def ReadableScalar2DataObjectWithReadable[T](s:Scalar[T] with Readable[T]):DataObject[T] with Readable[T] =
-    new DataObjectInst[T](s.oid ++ 0, s.name+".0") with Readable[T]
+  implicit def ReadableScalar2DataObjectWithReadable[T](s:Scalar[T] with ReadWrite[T]):DataObject[T] with ReadableDataObject[T] =
+    new DataObjectInst[T](s.oid ++ 0, s.name+".0") with ReadableDataObject[T]
 }
 
 import Mib._
@@ -86,25 +86,9 @@ trait DataObject[T] extends MibObject {
   def to(v:T):VarBind[T] = vb(v)
 }
 
-/**
-  * This is an OID that accessible by adding a single index.  I suspect this may not work for all cases
-  * because I know of some OIDs at ADTRAN which are not indexed with a single octet.
-  */
-trait Accessible[T] extends (Int => DataObject[T]) with MibObject 
-
-/**
-  * A MIB object which can be read from a remote SNMP agent.
-  */
-trait Readable[T] extends Accessible[T] {
-    def apply(index:Int) = new DataObjectInst[T](oid :+ index, name+"."+index) with Readable[T]
-}
-
-/**
-  * A MIB object which can be written to a remote SNMP agent.  
-  */
-trait Writable[T] extends Readable[T] {
-  override def apply(index:Int) = new DataObjectInst[T](oid :+ index, name+"."+index) with Writable[T]
-}
+trait ReadableDataObject[T] extends DataObject[T]
+trait WritableDataObject[T] extends DataObject[T]
+trait ReadWriteDataObject[T] extends ReadableDataObject[T] with WritableDataObject[T]
 
 /**
   * Enumerating trait for the MAX-ACCESS property of an OBJECT-TYPE
@@ -116,15 +100,29 @@ sealed trait MaxAccess
   */
 trait NoAccess extends MaxAccess
 
+trait AccessibleForNotify extends MaxAccess
+
 /**
   * A MIB object with MAX-ACCESS "Read-only"
   */
-trait ReadOnly[T] extends MaxAccess with Readable[T]
+trait ReadOnly[T] extends (Oid => ReadableDataObject[T]) with MibObject with MaxAccess {
+  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadableDataObject[T]
+}
 
 /**
   * A MIB object with MAX-ACCESS "ReadWrite"
   */
-trait ReadWrite[T] extends MaxAccess with Writable[T]
+trait ReadWrite[T] extends (Oid => ReadWriteDataObject[T]) with MibObject with MaxAccess  {
+  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadWriteDataObject[T]
+}
+
+trait WriteOnly[T] extends (Oid => WritableDataObject[T]) with MibObject with MaxAccess {
+  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with WritableDataObject[T]
+}
+
+trait ReadCreate[T] extends (Oid => ReadWriteDataObject[T]) with MibObject with MaxAccess  {
+  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadWriteDataObject[T]
+}
 
 /**
   * A Scalar MIB object.  Place-holder primarily for implicit conversion to allow a
@@ -135,7 +133,7 @@ trait ReadWrite[T] extends MaxAccess with Writable[T]
   * snmp.set(agentppSimMode to 2)
   * </code> 
   */
-trait Scalar[T] extends Accessible[T] 
+trait Scalar[T] extends MibObject 
 
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
