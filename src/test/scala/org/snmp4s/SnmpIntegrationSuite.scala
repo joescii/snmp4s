@@ -41,9 +41,18 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       get(ifIndex(1)) should equal (Right(1))
     }
     
-    "be able to walk something" in {
-      walk(ifIndex) should equal (Left("Crap")) // (Right(Seq(ifIndex(1) vb 1)))
-      walk(ifAdminStatus) should equal (Left("Crap"))
+    "be able to walk on Read-Only OID ifIndex" in {
+      walk(ifIndex) should equal (Right(Seq(
+        ifIndex(1) vb 1,
+        ifIndex(2) vb 2
+      )))
+    }
+    
+    "be able to walk on Read-Write OID ifAdminStatus" in {
+      walk(ifAdminStatus) should equal (Right(Seq(
+        ifAdminStatus(1) vb 1,
+        ifAdminStatus(2) vb 1
+      )))
     }
   }
 }
