@@ -87,14 +87,15 @@ trait DataObject[T] extends MibObject {
 }
 
 /**
-  * This is an OID that can be completed by adding a single index.  Sketchy, I know...
+  * This is an OID that accessible by adding a single index.  I suspect this may not work for all cases
+  * because I know of some OIDs at ADTRAN which are not indexed with a single octet.
   */
-trait Completeable[T] extends (Int => DataObject[T]) with MibObject 
+trait Accessible[T] extends (Int => DataObject[T]) with MibObject 
 
 /**
   * A MIB object which can be read from a remote SNMP agent.
   */
-trait Readable[T] extends Completeable[T] {
+trait Readable[T] extends Accessible[T] {
     def apply(index:Int) = new DataObjectInst[T](oid :+ index, name+"."+index) with Readable[T]
 }
 
@@ -134,7 +135,7 @@ trait ReadWrite[T] extends MaxAccess with Writable[T]
   * snmp.set(agentppSimMode to 2)
   * </code> 
   */
-trait Scalar[T] extends Completeable[T] 
+trait Scalar[T] extends Accessible[T] 
 
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
