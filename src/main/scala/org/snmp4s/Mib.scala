@@ -21,19 +21,19 @@ object Mib {
     * Implicit conversion that allows us to specify VarBinds simply as a tuple of the DataObject
     * and the value.
     */
-  implicit def Tuple2VarBind[T](v:(DataObject[T], T)):VarBind[T] = VarBind(v._1, v._2)
+  implicit def Tuple2VarBind[A <: MaxAccess, T](v:(DataObject[A, T], T)):VarBind[A, T] = VarBind(v._1, v._2)
   
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
-  implicit def Scalar2DataObject[T](s:Scalar[T]):DataObject[T] = 
-    new DataObjectInst[T](s.oid ++ 0, s.name+".0")
+  implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A]):DataObject[A, T] = 
+    new DataObjectInst[A, T](s.oid ++ 0, s.name+".0")
 
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
-  implicit def ReadableScalar2DataObjectWithReadable[T](s:Scalar[T] with ReadWrite[T]):DataObject[T] with ReadableDataObject[T] =
-    new DataObjectInst[T](s.oid ++ 0, s.name+".0") with ReadableDataObject[T]
+  implicit def ReadableScalar2DataObjectWithReadable[A <: MaxAccess, T](s:Scalar[A] with ReadWrite):DataObject[A, T] =
+    new DataObjectInst[A, T](s.oid ++ 0, s.name+".0") 
 }
 
 import Mib._
@@ -49,17 +49,17 @@ case object Version3  extends Version { override def enum = SnmpConstants.versio
 /**
   * An OBJECT-TYPE which is defined in a MIB.   
   */
-trait MibObject extends Equals {
+trait MibObject[A <: MaxAccess] extends Equals {
   def oid():Oid
   def name():String
 
   def canEqual(other: Any) = {
-    other.isInstanceOf[MibObject]
+    other.isInstanceOf[MibObject[A]]
   }
   
   override def equals(other: Any) = {
     other match {
-      case that: MibObject => that.canEqual(MibObject.this) && oid == that.oid
+      case that: MibObject[A] => that.canEqual(MibObject.this) && oid == that.oid
       case _ => false
     }
   }
@@ -73,22 +73,18 @@ trait MibObject extends Equals {
 /**
   * A DataObject is a leaf OID which is complete and can be bound to a variable.
   */
-trait DataObject[T] extends MibObject {
+trait DataObject[A <: MaxAccess, T] extends MibObject[A] {
   /**
     * Convenience method to create a VarBind with this OID.
     */
-  def vb(v:T):VarBind[T] = (this, v)
+  def vb(v:T):VarBind[A, T] = (this, v)
   
   /**
     * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.  Just a 
     * cosmetic DSL alias for vb.
     */
-  def to(v:T):VarBind[T] = vb(v)
+  def to(v:T) = vb(v)
 }
-
-trait ReadableDataObject[T] extends DataObject[T]
-trait WritableDataObject[T] extends DataObject[T]
-trait ReadWriteDataObject[T] extends ReadableDataObject[T] with WritableDataObject[T]
 
 /**
   * Enumerating trait for the MAX-ACCESS property of an OBJECT-TYPE
@@ -105,23 +101,23 @@ trait AccessibleForNotify extends MaxAccess
 /**
   * A MIB object with MAX-ACCESS "Read-only"
   */
-trait ReadOnly[T] extends (Oid => ReadableDataObject[T]) with MibObject with MaxAccess {
-  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadableDataObject[T]
-}
+trait ReadOnly extends MaxAccess 
 
 /**
   * A MIB object with MAX-ACCESS "ReadWrite"
   */
-trait ReadWrite[T] extends (Oid => ReadWriteDataObject[T]) with MibObject with MaxAccess  {
-  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadWriteDataObject[T]
-}
+trait ReadWrite extends MaxAccess
 
-trait WriteOnly[T] extends (Oid => WritableDataObject[T]) with MibObject with MaxAccess {
-  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with WritableDataObject[T]
-}
+trait WriteOnly extends MaxAccess 
 
-trait ReadCreate[T] extends (Oid => ReadWriteDataObject[T]) with MibObject with MaxAccess  {
-  def apply(index:Oid) = new DataObjectInst[T](oid ++ index, name+"."+index) with ReadWriteDataObject[T]
+trait ReadCreate extends MaxAccess 
+
+/**
+  * A MIB object with MAX-ACCESS "Read-only"
+  */
+class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String) 
+  extends (Oid => DataObject[A, T]) with MibObject[A] {
+  def apply(index:Oid) = new DataObjectInst[A, T](oid ++ index, name+"."+index) with DataObject[A, T]
 }
 
 /**
@@ -133,16 +129,16 @@ trait ReadCreate[T] extends (Oid => ReadWriteDataObject[T]) with MibObject with 
   * snmp.set(agentppSimMode to 2)
   * </code> 
   */
-trait Scalar[T] extends MibObject 
+trait Scalar[A <: MaxAccess] extends MibObject[A] 
 
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
   */
-class DataObjectInst[T](val oid:Oid, val name:String) extends DataObject[T] 
+class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String) extends DataObject[A, T] 
 
 /**
   * Wrapper of a <code>MibObject</code> and it's respective value for
   * use as a SNMP set request. 
   */
-case class VarBind[T](val obj:DataObject[T], val v:T)
+case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T)
 

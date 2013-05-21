@@ -7,10 +7,9 @@ import Mib._
 
 class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
   val snmp = new Snmp
-  case object agentppSimMode extends Scalar[Int] with ReadWrite[Int] { val oid = Seq(1,3,6,1,4,1,4976,2,1,1); val name = "agentppSimMode" }
+  case object agentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite] 
   
-  // Not really a scalar.  Just a placeholder for now
-  case object ifIndex        extends Scalar[Int] with ReadOnly[Int]  { val oid = Seq(1,3,6,1,2,1,2,2,1,1);    val name = "ifIndex" }
+  case object ifIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
   
   var ta:Option[TestAgent] = None
   
@@ -29,11 +28,11 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     }
     
     "be able to set value 2 on agentppSimMode, read it back, and set it back to 1 on our simulator" in {
-      snmp.get(agentppSimMode) should equal (Right(1))
-      snmp.set(agentppSimMode to 2) should equal (None)
-      snmp.get(agentppSimMode) should equal (Right(2))
-      snmp.set(agentppSimMode to 1) should equal (None)
-      snmp.get(agentppSimMode) should equal (Right(1))
+      snmp.get(agentppSimMode(0)) should equal (Right(1))
+      snmp.set(agentppSimMode(0) to 2) should equal (None)
+      snmp.get(agentppSimMode(0)) should equal (Right(2))
+      snmp.set(agentppSimMode(0) to 1) should equal (None)
+      snmp.get(agentppSimMode(0)) should equal (Right(1))
     }
     
     "be able to walk something" in {

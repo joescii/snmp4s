@@ -28,7 +28,7 @@ class Snmp(
     target
   }
   
-  def get[T](obj:ReadableDataObject[T])(implicit m:Manifest[T]):Either[String,T] = {
+  def get[T](obj:DataObject[ReadWrite, T])(implicit m:Manifest[T]):Either[String,T] = {
     val pdu = new PDU
     pdu.add(new VariableBinding(new OID(obj.oid.toArray)))
     pdu.setType(PDU.GET)
@@ -46,7 +46,7 @@ class Snmp(
     }
   }
 
-  def set[T](set:VarBind[T])(implicit m:Manifest[T]):Option[String] = {    
+  def set[T](set:VarBind[ReadWrite, T])(implicit m:Manifest[T]):Option[String] = {    
     if(m.runtimeClass == classOf[Int]){
       val pdu = new PDU
       val vb = new VariableBinding(new OID(set.obj.oid.toArray))
@@ -63,7 +63,7 @@ class Snmp(
     }
   }
   
-  def walk[T](obj:ReadOnly[T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[T]]] = {
+  def walk[T](obj:AccessibleObject[ReadOnly, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[ReadOnly, T]]] = {
     Left("Crap")
   }
 }
