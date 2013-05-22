@@ -512,6 +512,66 @@ data: */
 	    return ifTable;
 	  }
 
+  private static DefaultMOTable createStaticSnmp4sTable() {
+	    MOTableSubIndex[] subIndexes =
+	        new MOTableSubIndex[] { new MOTableSubIndex(SMIConstants.SYNTAX_INTEGER) };
+	    MOTableIndex indexDef = new MOTableIndex(subIndexes, false);
+	    MOColumn[] columns = new MOColumn[8];
+	    int c = 0;
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_NULL,
+	                     MOAccessImpl.ACCESS_READ_ONLY);     // testNull
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_INTEGER,
+	                     MOAccessImpl.ACCESS_READ_ONLY);	// testBoolean
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_INTEGER,
+	                     MOAccessImpl.ACCESS_READ_ONLY);     // ifType
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_INTEGER,
+	                     MOAccessImpl.ACCESS_READ_ONLY);     // ifMtu
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_GAUGE32,
+	                     MOAccessImpl.ACCESS_READ_ONLY);     // ifSpeed
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_OCTET_STRING,
+	                     MOAccessImpl.ACCESS_READ_ONLY);// ifPhysAddress
+	    columns[c++] =
+	        new MOMutableColumn(c, SMIConstants.SYNTAX_INTEGER,     // ifAdminStatus
+	                            MOAccessImpl.ACCESS_READ_WRITE, null);
+	    columns[c++] =
+	        new MOColumn(c, SMIConstants.SYNTAX_INTEGER,
+	                     MOAccessImpl.ACCESS_READ_ONLY);     // ifOperStatus
+
+	    DefaultMOTable ifTable =
+	        new DefaultMOTable(new OID("1.3.6.1.4.1.50000.1.1"), indexDef, columns);
+	    MOMutableTableModel model = (MOMutableTableModel) ifTable.getModel();
+	    Variable[] rowValues1 = new Variable[] {
+	        new Integer32(1),
+	        new OctetString("eth0"),
+	        new Integer32(6),
+	        new Integer32(1500),
+	        new Gauge32(100000000),
+	        new OctetString("00:00:00:00:01"),
+	        new Integer32(1),
+	        new Integer32(1)
+	    };
+	    Variable[] rowValues2 = new Variable[] {
+	        new Integer32(2),
+	        new OctetString("loopback"),
+	        new Integer32(24),
+	        new Integer32(1500),
+	        new Gauge32(10000000),
+	        new OctetString("00:00:00:00:02"),
+	        new Integer32(1),
+	        new Integer32(1)
+	    };
+	    model.addRow(new DefaultMOMutableRow2PC(new OID("1"), rowValues1));
+	    model.addRow(new DefaultMOMutableRow2PC(new OID("2"), rowValues2));
+	    ifTable.setVolatile(true);
+	    return ifTable;
+	  }
+
   protected void initTransportMappings() throws IOException {
     transportMappings = new TransportMapping[1];
     Address addr = GenericAddress.parse(address);
