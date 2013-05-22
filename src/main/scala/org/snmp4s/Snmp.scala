@@ -49,20 +49,26 @@ class Snmp(
   }
 
   def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[String] = {    
-    if(m.runtimeClass == classOf[Int]){
-      val pdu = new PDU
-      val vb = new VariableBinding(set.obj.oid)
-      vb.setVariable(new Integer32(set.v.asInstanceOf[Int]))
-      pdu.add(vb)
-      pdu.setType(PDU.SET)
+    toVariable(set.v) match {
+      case Some(v) => {
+        val pdu = new PDU
+        val vb = new VariableBinding(set.obj.oid)
+        vb.setVariable(v)
+        pdu.add(vb)
+        pdu.setType(PDU.SET)
 
-      val event = snmp.set(pdu, target(write))
-      
-      None
+        val event = snmp.set(pdu, target(write))
+        None
+      }
+      case _ => Some("Unsupported syntax")
     }
-    else {
-      Some("Unsupported syntax")
-    }
+  }
+  
+  private def toVariable[T](v:T)(implicit m:Manifest[T]):Option[Variable] = { 
+    val c = m.runtimeClass
+    if(c == classOf[Int]) Some(new Integer32(v.asInstanceOf[Int]))
+    else if(c == classOf[String]) Some(new OctetString(v.asInstanceOf[String]))
+    else None
   }
   
   def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[A, T]]] = {

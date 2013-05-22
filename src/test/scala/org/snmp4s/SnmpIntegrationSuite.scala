@@ -10,7 +10,8 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   case object agentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
   case object ifIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
   case object ifDescr		 extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  case object ifAdminStatus  extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
+  case object ifAdminStatus  extends AccessibleObject[ReadWrite, Int]   (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
+  case object ifAlias        extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,1,18), "ifAlias")
   
   var ta:Option[TestAgent] = None
   
@@ -66,6 +67,12 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
         ifDescr(1) vb "eth0",
         ifDescr(2) vb "loopback"
       )))
+    }
+    
+    "be able to set String syntax Read-Write OID ifAlias" in {
+      get(ifAlias(1)) should equal (Right("My eth"))
+      set(ifAlias(1) to "Your eth") should equal (None)
+      get(ifAlias(1)) should equal (Right("Your eth"))
     }
   }
 }
