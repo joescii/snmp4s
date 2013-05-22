@@ -23,11 +23,23 @@ This can be done today::
     timeout = 1500
   )
 
-  // Define the MIB objects you want to manipulate (this part will one day be generated from MIBs)
+  // Define the MIB objects you want to manipulate 
+  // This part will one day be generated from the MIBs, so don't worry about how ugly this part is.
   case object agentppSimMode extends AccessibleObject[ReadWrite, Int]
     (Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int]
   case object ifDescr extends AccessibleObject[ReadOnly, String]
     (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
+  object ifAdminStatus_enum extends EnumInteger {
+    type ifAdminStatus = Value
+    val up = Value(1, "up")
+    val down = Value(2, "down")
+    val test = Value(3, "test")
+  }
+  case object ifAdminStatus  extends AccessibleObject[ReadWrite, ifAdminStatus_enum.Value]   
+    (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(ifAdminStatus_enum) }
+
+  // While that code might be a mess to write until we have it generated, 
+  // you get to write elegant SNMP access code:
 
   // Get the scalar variable for agentppSimMode.0
   snmp.get(agentppSimMode(0)) match {
@@ -46,6 +58,10 @@ This can be done today::
     case Left(err)   => Seq() // Something bad happened
     case Right(walk) => walk map { vb => (vb.obj.oid.last, vb.v) }
   }
+
+  // OIDs with enumerated integer syntax are a cinch to work with
+  import ifAdminStatus_enum._
+  set(ifAdminStatus(1) to down)
 
 Code That Doesn't Work
 -----------------------

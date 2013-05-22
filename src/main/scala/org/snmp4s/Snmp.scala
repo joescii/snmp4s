@@ -45,11 +45,11 @@ class Snmp(
     val vb = res.get(0)
     val v = vb.getVariable
 
-    Right(cast(v))
+    Right(cast(obj, v))
   }
 
   def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[String] = {    
-    toVariable(set.v) match {
+    toVariable(set.obj, set.v) match {
       case Some(v) => {
         val pdu = new PDU
         val vb = new VariableBinding(set.obj.oid)
@@ -64,11 +64,19 @@ class Snmp(
     }
   }
   
-  private def toVariable[T](v:T)(implicit m:Manifest[T]):Option[Variable] = { 
+  private def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Option[Variable] = { 
     val c = m.runtimeClass
     if(c == classOf[Int]) Some(new Integer32(v.asInstanceOf[Int]))
     else if(c == classOf[String]) Some(new OctetString(v.asInstanceOf[String]))
+    else if(obj.enum.isDefined) Some(new Integer32(fromEnum(v)))
     else None
+  }
+  
+  private def fromEnum[T](v:T):Int = {
+    val c = v.getClass()
+    val m = c.getDeclaredMethod("id")
+    val r = m.invoke(v)
+    r.asInstanceOf[Int]
   }
   
   def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[A, T]]] = {
@@ -79,21 +87,24 @@ class Snmp(
     } yield {
       val o:Oid = vb.getOid()
       val v = vb.getVariable
-      VarBind(obj(o.last), cast(v))
+      VarBind(obj(o.last), cast(obj, v))
     }
     
     Right(vbs)
   }
   
   // TODO: Handle other types
-  private def cast[T](v:Variable)(implicit m:Manifest[T]):T = {
+  private def cast[A <: Readable, T](obj:MibObject[A], v:Variable)(implicit m:Manifest[T]):T = {
     val c = m.runtimeClass
-    if (c == classOf[Int]) 
-      v.toInt().asInstanceOf[T]
+    val r = if (c == classOf[Int]) 
+      v.toInt()
     else if(c == classOf[String])
-      v.toString().asInstanceOf[T]
+      v.toString()
+    else if(obj.enum isDefined)
+      obj.enum.get(v.toInt)
     else
-      1.asInstanceOf[T]
+      1
     
+    r.asInstanceOf[T]
   }
 }

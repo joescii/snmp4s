@@ -17,20 +17,25 @@ class SnmpUnitSuite extends WordSpec with ShouldMatchers {
   
   "A TextualConvention" should {
     "work" in {
-      import ifAdminStatus_syntax._
+      import ifAdminStatus_enum._
       
-      ifAdminStatus_syntax(1) should equal (up)
-      ifAdminStatus_syntax(2) should equal (down)
-      ifAdminStatus_syntax(3) should equal (test)
+      ifAdminStatus_enum(1) should equal (up)
+      ifAdminStatus_enum(2) should equal (down)
+      ifAdminStatus_enum(3) should equal (test)
       
-      up.toString   should equal ("up(1)")
-      down.toString should equal ("down(2)")
-      test.toString should equal ("test(3)")
+      up.toString   should equal ("up")
+      down.toString should equal ("down")
+      test.toString should equal ("test")
       
-      ifAdminStatus_syntax(1) match {
-        case ifAdminStatus_syntax.up =>
-        case ifAdminStatus_syntax.down =>
-        case ifAdminStatus_syntax.test =>
+      up.id   should equal (1)
+      down.id should equal (2)
+      test.id should equal (3)
+      ifAdminStatus_enum.values.contains(up) should equal (true)
+      
+      ifAdminStatus_enum(1) match {
+        case ifAdminStatus_enum.up =>
+        case ifAdminStatus_enum.down =>
+        case ifAdminStatus_enum.test =>
       }
     }
   }

@@ -51,11 +51,22 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )))
     }
     
-    "be able to walk on Read-Write OID ifAdminStatus" in {
+    "be able to walk on Read-Write enum OID ifAdminStatus" in {
+      import ifAdminStatus_enum._
       walk(ifAdminStatus) should equal (Right(Seq(
-        ifAdminStatus(1) vb 1,
-        ifAdminStatus(2) vb 1
+        ifAdminStatus(1) vb up,
+        ifAdminStatus(2) vb up
       )))
+    }
+    
+    "be able to get/set an enumerated value" in {
+      import ifAdminStatus_enum._
+      
+      get(ifAdminStatus(1)) should equal (Right(up))
+      set(ifAdminStatus(1) to down) should equal (None)
+      get(ifAdminStatus(1)) should equal (Right(down))
+      set(ifAdminStatus(1) to up) should equal (None)
+      get(ifAdminStatus(1)) should equal (Right(up))
     }
     
     "be able to walk on String syntax OID ifDescr" in {

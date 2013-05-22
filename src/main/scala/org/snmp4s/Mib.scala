@@ -40,12 +40,15 @@ case object Version1  extends Version { override def enum = SnmpConstants.versio
 case object Version2c extends Version { override def enum = SnmpConstants.version2c }
 case object Version3  extends Version { override def enum = SnmpConstants.version3 }
 
+trait EnumInteger extends Enumeration
+
 /**
   * An OBJECT-TYPE which is defined in a MIB.   
   */
 trait MibObject[A <: MaxAccess] extends Equals {
   def oid():Oid
   def name():String
+  def enum():Option[EnumInteger] = None
 
   def canEqual(other: Any) = {
     other.isInstanceOf[MibObject[A]]
@@ -123,7 +126,12 @@ trait ReadCreate extends MaxAccess with Readable with Writable
   */
 class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String) 
   extends (Oid => DataObject[A, T]) with MibObject[A] {
-  def apply(index:Oid) = new DataObjectInst[A, T](oid ++ index, name+"."+index) with DataObject[A, T]
+  def apply(index:Oid) = {
+    val e = enum()
+    new DataObjectInst[A, T](oid ++ index, name+"."+index) {
+      override def enum() = e 
+    }
+  }
 }
 
 /**
@@ -147,11 +155,3 @@ class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String) extends Da
   * use as a SNMP set request. 
   */
 case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T)
-
-trait TextualConvention
-trait TextualConventionEntry { 
-  def enum:Int
-  def parent:TextualConvention 
-  def name:String
-  override def toString:String = name+"("+enum+")" 
-}
