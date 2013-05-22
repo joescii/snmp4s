@@ -148,3 +148,10 @@ class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String) extends Da
   */
 case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T)
 
+trait TextualConvention
+trait TextualConventionEntry { 
+  def enum:Int
+  def parent:TextualConvention 
+  def name:String
+  override def toString:String = name+"("+enum+")" 
+}
