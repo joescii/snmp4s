@@ -24,7 +24,7 @@ This can be done today::
   )
 
   // Define the MIB objects you want to manipulate 
-  // This part will one day be generated from the MIBs, so don't worry about how ugly this part is.
+  // This part will one day be generated from the MIBs, so don't worry about how ugly it is.
   case object agentppSimMode extends AccessibleObject[ReadWrite, Int]
     (Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int]
   case object ifDescr extends AccessibleObject[ReadOnly, String]
@@ -35,7 +35,7 @@ This can be done today::
     val down = Value(2, "down")
     val test = Value(3, "test")
   }
-  case object ifAdminStatus  extends AccessibleObject[ReadWrite, ifAdminStatus_enum.Value]   
+  case object ifAdminStatus extends AccessibleObject[ReadWrite, ifAdminStatus_enum.Value]   
     (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(ifAdminStatus_enum) }
 
   // While that code might be a mess to write until we have it generated, 
