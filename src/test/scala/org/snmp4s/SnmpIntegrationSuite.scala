@@ -6,12 +6,7 @@ import org.scalatest.matchers.{ShouldMatchers}
 import Mib._
 
 class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
-  val snmp = new Snmp
-  case object agentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
-  case object ifIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
-  case object ifDescr		 extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  case object ifAdminStatus  extends AccessibleObject[ReadWrite, Int]   (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
-  case object ifAlias        extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,1,18), "ifAlias")
+  val snmp = new Snmp  
   
   var ta:Option[TestAgent] = None
   
@@ -25,6 +20,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   }
   
   import snmp._
+  import TestMibs._
   
   "An Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
