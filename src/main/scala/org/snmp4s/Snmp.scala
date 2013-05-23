@@ -8,6 +8,9 @@ import org.snmp4j.util.DefaultPDUFactory
 import scala.collection.JavaConversions._
 import Mib._
 
+/**
+  * Create one of these to do SNMP.
+  */
 class Snmp(
     val ip:String = "127.0.0.1", 
     val port:Int = 161, 

@@ -72,13 +72,13 @@ trait MibObject[A <: MaxAccess] extends Equals {
   */
 trait DataObject[A <: MaxAccess, T] extends MibObject[A] {
   /**
-    * Convenience method to create a VarBind with this OID.
+    * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.  Just a 
+    * cosmetic DSL alias for vb.
     */
   def vb(v:T):VarBind[A, T] = (this, v)
   
   /**
-    * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.  Just a 
-    * cosmetic DSL alias for vb.
+    * Convenience method to create a VarBind with this OID.
     */
   def to(v:T) = vb(v)
 }
@@ -88,7 +88,14 @@ trait DataObject[A <: MaxAccess, T] extends MibObject[A] {
   */
 sealed trait MaxAccess
 
+/**
+  * An object with MAX-ACCESS that is readable.
+  */
 protected trait Readable extends MaxAccess
+
+/**
+  * An object with MAX-ACCESS that is writable 
+  */
 protected trait Writable extends MaxAccess
 
 /**
@@ -152,6 +159,6 @@ class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String) extends Da
 
 /**
   * Wrapper of a <code>MibObject</code> and it's respective value for
-  * use as a SNMP set request. 
+  * use as a SNMP set request or as a response to a walk.
   */
 case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T)
