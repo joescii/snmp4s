@@ -81,5 +81,18 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       set(IfAlias(1) to "Your eth") should equal (None)
       get(IfAlias(1)) should equal (Right("Your eth"))
     }
+    
+    "be able to pattern match against a walk" in {
+      import IfAdminStatus_enum._
+      walk(IfAdminStatus) match {
+        case Right(l) => {
+          val t = l map { case VarBind(IfAdminStatus(i), v) => (i, v) }
+          t should equal (Seq((Seq(1),Up), (Seq(2),Up)))
+        }
+        
+        case Left(err) => fail
+      }
+
+    }
   }
 }

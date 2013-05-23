@@ -136,7 +136,7 @@ trait ReadCreate extends MaxAccess with Readable with Writable
 abstract class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) 
   extends (Oid => DataObject[A, T]) with MibObject[A] {
   def apply(index:Oid) = DataObjectInst[A, T](oid ++ index, name+"."+index, enum) 
-  
+  def unapply(obj:DataObjectInst[A, T]):Option[Oid] = Some(obj.oid.last)
 }
 
 /**
