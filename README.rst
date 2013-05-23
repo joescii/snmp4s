@@ -25,43 +25,51 @@ This can be done today::
 
   // Define the MIB objects you want to manipulate 
   // This part will one day be generated from the MIBs, so don't worry about how ugly it is.
-  case object agentppSimMode extends AccessibleObject[ReadWrite, Int]
+  case object AgentppSimMode extends AccessibleObject[ReadWrite, Int]
     (Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int]
-  case object ifDescr extends AccessibleObject[ReadOnly, String]
+  case object IfDescr extends AccessibleObject[ReadOnly, String]
     (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  object ifAdminStatus_enum extends EnumInteger {
-    type ifAdminStatus = Value
-    val up = Value(1, "up")
-    val down = Value(2, "down")
-    val test = Value(3, "test")
+  object IfAdminStatus_enum extends EnumInteger {
+    type IfAdminStatus = Value
+    val Up = Value(1, "up")
+    val Down = Value(2, "down")
+    val Test = Value(3, "test")
   }
-  case object ifAdminStatus extends AccessibleObject[ReadWrite, ifAdminStatus_enum.Value]   
-    (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(ifAdminStatus_enum) }
+  case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value]   
+    (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(IfAdminStatus_enum) }
 
   // While that code might be a mess to write until we have it generated, 
   // you get to write elegant SNMP access code:
 
   // Get the scalar variable for agentppSimMode.0
-  snmp.get(agentppSimMode(0)) match {
+  snmp.get(AgentppSimMode(0)) match {
     case Left(err) => // Something bad happened
     case Right(v)  => // v is set to the variable's value
   }
 
   // Set the scalar to 2. Since agentppSimMode is a scalar, we can drop the (0) index.
-  snmp.set(agentppSimMode to 2) match {
+  snmp.set(AgentppSimMode to 2) match {
     case Some(err) => // Something bad happened
     case _         => // It worked
   }
 
   // Walk ifDescr and return a tuple containing the index and the value
-  snmp walk ifDescr match {
+  snmp walk IfDescr match {
     case Left(err)   => Seq() // Something bad happened
     case Right(walk) => walk map { vb => (vb.obj.oid.last, vb.v) }
   }
 
   // OIDs with enumerated integer syntax are a cinch to work with
-  import ifAdminStatus_enum._
-  set(ifAdminStatus(1) to down)
+  import IfAdminStatus_enum._
+  set(IfAdminStatus(1) to Down)
+  get(IfAdminStatus(1)) match {
+    case Left(err) =>  // Something bad happened
+    case Right(status) => status match {
+      case Up   =>  // I'm up
+      case Down =>  // I'm down
+      case Test =>  // I'm testing
+    }
+  }
 
 Code That Doesn't Work
 -----------------------
@@ -69,56 +77,56 @@ As important as code that works, is code that doesn't.  These mistakes will not 
 
   val snmp = new Snmp
 
-  case object ifDescr extends AccessibleObject[ReadOnly, String]
+  case object IfDescr extends AccessibleObject[ReadOnly, String]
     (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  case object ifAdminStatus extends AccessibleObject[ReadWrite, Int]
+  case object IfAdminStatus extends AccessibleObject[ReadWrite, Int]
     (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
 
   // Cannot set a Read-only OID
-  snmp.set(ifDescr(1) to "description")
+  snmp.set(IfDescr(1) to "description")
   // inferred type arguments [org.snmp4s.ReadOnly,String] do not conform to method set's type parameter bounds [A <: org.snmp4s.Writable,T]
-  // [error]         snmp.set(ifDescr(1) to "description")
+  // [error]         snmp.set(IfDescr(1) to "description")
   // [error]              ^
 
   // Cannot set an OID with an Int syntax with a String
-  snmp.set(ifAdminStatus(1) to "2")
+  snmp.set(IfAdminStatus(1) to "2")
   // type mismatch;
   // [error]  found   : String("2")
   // [error]  required: Int
-  // [error]           snmp.set(ifAdminStatus(1) to "2")
+  // [error]           snmp.set(IfAdminStatus(1) to "2")
   // [error]                                        ^
 
   // Cannot get the wrong type
-  val descr:Either[String,Int] = snmp get ifDescr(1)
+  val descr:Either[String,Int] = snmp get IfDescr(1)
   // type mismatch;
   // [error]  found   : Either[String,String]
   // [error]  required: Either[String,Int]
-  // [error]           val descr:Either[String,Int] = snmp get ifDescr(1)
+  // [error]           val descr:Either[String,Int] = snmp get IfDescr(1)
   // [error]                                               ^
 
 
 Futuristic Example Code
 -----------------------
-This is what I envision.  Note that ``ifIndex``, ``ifType``, ``ethernet_csmacd`` etc were generated from the MIBs::
+This is what I envision.  Note that ``IfIndex``, ``IfType``, ``Ethernet_csmacd`` etc were generated from the MIBs::
 
   val snmp = new Snmp // Instantiated with whatever params you want, including SNMPv3 stuff
 
   val ethernetAdminStates = (for { 
-    varbind <- snmp walk ifIndex
+    varbind <- snmp walk IfIndex
   } yield {
-    snmp.get(ifType(varbind.v)) match {
-      case ethernet_csmacd => Some((varbind.v, snmp.get(ifAdminStatus(varbind.v))))
+    snmp.get(IfType(varbind.v)) match {
+      case Ethernet_csmacd => Some((varbind.v, snmp.get(IfAdminStatus(varbind.v))))
 	  case _ => None
     }
   }).flatten
 
   // Can get multiple variables and they're all the correct type
-  val Either[String,(Int, String, Int)] = snmp.get(ifIndex(1), ifDescr(1), ifAdminStatus(1))
+  val Either[String,(Int, String, Int)] = snmp.get(IfIndex(1), IfDescr(1), IfAdminStatus(1))
 
 
 If I really get around to doing something awesome, maybe I'll figure out how to minimize the number of messages
 transmitted to perform the previous block of code.  In particular, it should perform the ``walk``, perform the ``get``
-of all ``ifType`` in one PDU, then perform the ``ifAdminStatus`` gets in one PDU.
+of all ``IfType`` in one PDU, then perform the ``IfAdminStatus`` gets in one PDU.
 
 I also hope to eventually use `akka`_ to support asynchronous handling of this API.
 
