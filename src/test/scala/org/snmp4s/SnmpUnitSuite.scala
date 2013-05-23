@@ -10,32 +10,32 @@ class SnmpUnitSuite extends WordSpec with ShouldMatchers {
   
   "A MibObject" should {
     "be a function that returns a child" in {
-      val child = myReadOnlyOid(0)
+      val child = MyReadOnlyOid(0)
       child.oid should equal(Seq(1,2,3,4,1,0))
     }
   }  
   
   "A TextualConvention" should {
     "work" in {
-      import ifAdminStatus_enum._
+      import IfAdminStatus_enum._
       
-      ifAdminStatus_enum(1) should equal (up)
-      ifAdminStatus_enum(2) should equal (down)
-      ifAdminStatus_enum(3) should equal (test)
+      IfAdminStatus_enum(1) should equal (Up)
+      IfAdminStatus_enum(2) should equal (Down)
+      IfAdminStatus_enum(3) should equal (Test)
       
-      up.toString   should equal ("up")
-      down.toString should equal ("down")
-      test.toString should equal ("test")
+      Up.toString   should equal ("up")
+      Down.toString should equal ("down")
+      Test.toString should equal ("test")
       
-      up.id   should equal (1)
-      down.id should equal (2)
-      test.id should equal (3)
-      ifAdminStatus_enum.values.contains(up) should equal (true)
+      Up.id   should equal (1)
+      Down.id should equal (2)
+      Test.id should equal (3)
+      IfAdminStatus_enum.values.contains(Up) should equal (true)
       
-      ifAdminStatus_enum(1) match {
-        case ifAdminStatus_enum.up =>
-        case ifAdminStatus_enum.down =>
-        case ifAdminStatus_enum.test =>
+      IfAdminStatus_enum(1) match {
+        case Up =>
+        case Down =>
+        case Test =>
       }
     }
   }
