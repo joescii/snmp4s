@@ -71,6 +71,12 @@ This can be done today::
     }
   }
 
+  // Can pattern match against the OIDs
+  val testPorts = snmp walk IfAdminStatus match {
+    case Left(err)   => Seq() // Something bad happened
+    case Right(walk) => for(VarBind(IfAdminStatus(Seq(i)), Test) <- walk) yield i
+  }
+
 Code That Doesn't Work
 -----------------------
 As important as code that works, is code that doesn't.  These mistakes will not compile::
