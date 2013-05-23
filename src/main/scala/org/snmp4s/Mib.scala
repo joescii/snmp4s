@@ -23,6 +23,8 @@ object Mib {
     */
   implicit def Tuple2VarBind[A <: MaxAccess, T](v:(DataObject[A, T], T)):VarBind[A, T] = VarBind(v._1, v._2)
   
+  implicit def VarBind2Tuple[A <: MaxAccess, T](vb:VarBind[A, T]) = vb.tuple
+  
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
@@ -75,7 +77,7 @@ trait DataObject[A <: MaxAccess, T] extends MibObject[A] {
     * Returns a <code>VarBind</code> to be passed to <code>Snmp.set</code>.  Just a 
     * cosmetic DSL alias for vb.
     */
-  def vb(v:T):VarBind[A, T] = (this, v)
+  def vb(v:T) = VarBind(this, v)
   
   /**
     * Convenience method to create a VarBind with this OID.
@@ -161,4 +163,9 @@ class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String) extends Da
   * Wrapper of a <code>MibObject</code> and it's respective value for
   * use as a SNMP set request or as a response to a walk.
   */
-case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T)
+case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T) {
+  /**
+    * Convenience value for handling a VarBind as a tuple
+    */
+  val tuple = (obj, v)
+}
