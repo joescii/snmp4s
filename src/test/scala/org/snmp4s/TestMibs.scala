@@ -14,6 +14,6 @@ object TestMibs {
   case object AgentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
   case object IfIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
   case object IfDescr		 extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  case object IfAdminStatus  extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value]   (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(IfAdminStatus_enum) }
+  case object IfAdminStatus  extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value]   (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus", Some(IfAdminStatus_enum)) 
   case object IfAlias        extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,1,18), "ifAlias")
 }
