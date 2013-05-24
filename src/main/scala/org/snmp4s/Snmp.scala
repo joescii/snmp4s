@@ -8,6 +8,60 @@ import org.snmp4j.util.DefaultPDUFactory
 import scala.collection.JavaConversions._
 import Mib._
 
+sealed trait SnmpError
+case object AuthorizationError	extends SnmpError
+case object BadValue			extends SnmpError
+case object CommitFailed		extends SnmpError
+case object GeneralError		extends SnmpError
+case object InconsistentName	extends SnmpError
+case object InconsistentValue	extends SnmpError
+case object NoAccessError		extends SnmpError
+case object NoCreation			extends SnmpError
+case object NoSuchName			extends SnmpError
+case object NotWritable			extends SnmpError
+case object ReadOnlyError		extends SnmpError
+case object ResourceUnavailable	extends SnmpError	
+case object TooBig				extends SnmpError
+case object UndoFailed			extends SnmpError
+case object WrongEncoding       extends SnmpError
+case object WrongLength			extends SnmpError
+case object WrongType			extends SnmpError
+case object WrongValue			extends SnmpError
+case object UnsupportedSyntax   extends SnmpError
+case object AgentUnreachable	extends SnmpError
+case class ExceptionThrown(val e:Exception) extends SnmpError
+case class UndefinedError(val i:Int) extends SnmpError
+
+private object ErrorMap extends (Int => SnmpError) {
+  import org.snmp4j.mp.SnmpConstants._
+  
+  private val m = Map(
+    SNMP_ERROR_AUTHORIZATION_ERROR -> AuthorizationError,	
+	SNMP_ERROR_BAD_VALUE -> BadValue,
+	SNMP_ERROR_COMMIT_FAILED -> CommitFailed,
+	SNMP_ERROR_GENERAL_ERROR -> GeneralError,
+	SNMP_ERROR_INCONSISTENT_NAME -> InconsistentName,
+	SNMP_ERROR_INCONSISTENT_VALUE -> InconsistentValue,
+	SNMP_ERROR_NO_ACCESS -> NoAccessError,
+	SNMP_ERROR_NO_CREATION -> NoCreation,
+	SNMP_ERROR_NO_SUCH_NAME -> NoSuchName,
+	SNMP_ERROR_NOT_WRITEABLE -> NotWritable,
+	SNMP_ERROR_READ_ONLY -> ReadOnlyError,
+	SNMP_ERROR_RESOURCE_UNAVAILABLE -> ResourceUnavailable,
+	SNMP_ERROR_TOO_BIG -> TooBig,
+	SNMP_ERROR_UNDO_FAILED -> UndoFailed,
+	SNMP_ERROR_WRONG_ENCODING -> WrongEncoding,
+	SNMP_ERROR_WRONG_LENGTH -> WrongLength,
+	SNMP_ERROR_WRONG_TYPE -> WrongType,
+	SNMP_ERROR_WRONG_VALUE -> WrongValue
+  )
+  
+  def apply(i:Int) = m.get(i) match {
+    case Some(e) => e
+    case _ => UndefinedError(i)
+  }
+}
+
 /**
   * Create one of these to do SNMP.
   */
@@ -24,7 +78,7 @@ class Snmp(
   private val map  = new DefaultUdpTransportMapping
   private val snmp = new Snmp4j(map)
   map.listen()
-  
+    
   private def target(comm:String) = {
     val target = new CommunityTarget
     target.setCommunity(new OctetString(read))
@@ -38,20 +92,27 @@ class Snmp(
   implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
-  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[String,T] = {
+  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[SnmpError,T] = {
     val pdu = new PDU
     pdu.add(new VariableBinding(obj.oid))
     pdu.setType(PDU.GET)
     
     val event = snmp.get(pdu, target(read))
     val res = event.getResponse
-    val vb = res.get(0)
-    val v = vb.getVariable
-
-    Right(cast(obj, v))
+    
+    if(res.getErrorStatus > 0) {
+      val i = res.getErrorIndex()
+      val vb = res.get(i - 1)
+      val v = vb.getVariable
+      Left(ErrorMap(res.getErrorStatus))
+    } else {
+      val vb = res.get(0)
+      val v = vb.getVariable
+      Right(cast(obj, v))
+    }
   }
 
-  def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[String] = {    
+  def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[SnmpError] = {    
     toVariable(set.obj, set.v) match {
       case Some(v) => {
         val pdu = new PDU
@@ -61,9 +122,15 @@ class Snmp(
         pdu.setType(PDU.SET)
 
         val event = snmp.set(pdu, target(write))
-        None
+        val res = event.getResponse
+        if (res.getErrorStatus > 0) {
+          val i = res.getErrorIndex()
+          val vb = res.get(i - 1)
+          val v = vb.getVariable
+          Some(ErrorMap(res.getErrorStatus))
+        } else None
       }
-      case _ => Some("Unsupported syntax")
+      case _ => Some(UnsupportedSyntax)
     }
   }
   
@@ -82,18 +149,22 @@ class Snmp(
     r.asInstanceOf[Int]
   }
   
-  def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[String,Seq[VarBind[A, T]]] = {
-    val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
-    val vbs:Seq[VarBind[A, T]] = for {
-      event <- events
-      vb <- event.getVariableBindings()
-    } yield {
-      val o:Oid = vb.getOid()
-      val v = vb.getVariable
-      VarBind(obj(o.last), cast(obj, v))
+  def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[SnmpError,Seq[VarBind[A, T]]] = {
+    try {
+      val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
+      val vbs: Seq[VarBind[A, T]] = for {
+        event <- events
+        vb <- event.getVariableBindings()
+      } yield {
+        val o: Oid = vb.getOid()
+        val v = vb.getVariable
+        VarBind(obj(o.last), cast(obj, v))
+      }
+
+      Right(vbs)
+    } catch {
+      case n:NullPointerException => Left(AgentUnreachable)
     }
-    
-    Right(vbs)
   }
   
   // TODO: Handle other types
