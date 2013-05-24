@@ -100,6 +100,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     "handle errors" in {
       get(MyReadOnlyOid(1)) should equal (Left(NoSuchName))
       set(MyReadWriteOid(2) to 42) should equal (Some(NoSuchName))
+      walk(MyReadOnlyOid) should equal(Right(Seq()))
       
       (new Snmp("invalid")).walk(IfAdminStatus) should equal (Left(AgentUnreachable)) 
     }
