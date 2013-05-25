@@ -1,6 +1,6 @@
 name := "snmp4s"
 
-version := "0.0.1"
+version := "0.1.0"
 
 scalaVersion := "2.10.1"
 
@@ -13,3 +13,11 @@ libraryDependencies ++= Seq(
   "org.snmp4j" % "snmp4j-agent" % "2.0.7" % "test",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 )
+
+osgiSettings
+
+OsgiKeys.exportPackage := Seq(
+  "org.snmp4s"
+)
+
+OsgiKeys.privatePackage := Seq()
