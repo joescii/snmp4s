@@ -13,7 +13,7 @@ Code That Works
 This can be done today::
 
   // Instantiate a new Snmp object, shown here with defaults for IP, port, community, etc.
-  val snmp = new Snmp(
+  val snmp = new Snmp(SnmpParams(
     ip = "127.0.0.1", 
     port = 161, 
     read = "public", 
@@ -21,7 +21,7 @@ This can be done today::
     version = Version1,
     retries = 2,
     timeout = 1500
-  )
+  ))
 
   // Define the MIB objects you want to manipulate 
   // This part will one day be generated from the MIBs, so don't worry about how ugly it is.
@@ -81,7 +81,7 @@ Code That Doesn't Work
 -----------------------
 As important as code that works, is code that doesn't.  These mistakes will not compile::
 
-  val snmp = new Snmp
+  val snmp = new Snmp(SnmpParams())
 
   case object IfDescr extends AccessibleObject[ReadOnly, String]
     (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
@@ -115,7 +115,7 @@ Futuristic Example Code
 -----------------------
 This is what I envision.  Note that ``IfIndex``, ``IfType``, ``Ethernet_csmacd`` etc were generated from the MIBs::
 
-  val snmp = new Snmp // Instantiated with whatever params you want, including SNMPv3 stuff
+  val snmp = new Snmp(SnmpParams()) // Instantiated with whatever params you want, including SNMPv3 stuff
 
   val ethernetAdminStates = (for { 
     varbind <- snmp walk IfIndex
