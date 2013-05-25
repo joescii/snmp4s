@@ -93,42 +93,59 @@ class Snmp(
   implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
   def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[SnmpError,T] = {
-    val pdu = new PDU
-    pdu.add(new VariableBinding(obj.oid))
-    pdu.setType(PDU.GET)
-    
-    val event = snmp.get(pdu, target(read))
-    val res = event.getResponse
-    
-    if(res.getErrorStatus > 0) {
-      val i = res.getErrorIndex()
-      val vb = res.get(i - 1)
-      val v = vb.getVariable
-      Left(ErrorMap(res.getErrorStatus))
-    } else {
-      val vb = res.get(0)
-      val v = vb.getVariable
-      Right(cast(obj, v))
+    try {
+      val pdu = new PDU
+      pdu.add(new VariableBinding(obj.oid))
+      pdu.setType(PDU.GET)
+
+      val event = snmp.get(pdu, target(read))
+      val res = Option(event.getResponse)
+
+      res match {
+        case Some(res) => if (res.getErrorStatus > 0) {
+          val i = res.getErrorIndex()
+          val vb = res.get(i - 1)
+          val v = vb.getVariable
+          Left(ErrorMap(res.getErrorStatus))
+        } else {
+          val vb = res.get(0)
+          val v = vb.getVariable
+          Right(cast(obj, v))
+        }
+        case None => {
+          Left(AgentUnreachable)
+        }
+      }
+    } catch {
+      case e:NullPointerException => Left(AgentUnreachable)
     }
   }
 
   def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[SnmpError] = {    
     toVariable(set.obj, set.v) match {
       case Some(v) => {
-        val pdu = new PDU
-        val vb = new VariableBinding(set.obj.oid)
-        vb.setVariable(v)
-        pdu.add(vb)
-        pdu.setType(PDU.SET)
+        try {
+          val pdu = new PDU
+          val vb = new VariableBinding(set.obj.oid)
+          vb.setVariable(v)
+          pdu.add(vb)
+          pdu.setType(PDU.SET)
 
-        val event = snmp.set(pdu, target(write))
-        val res = event.getResponse
-        if (res.getErrorStatus > 0) {
-          val i = res.getErrorIndex()
-          val vb = res.get(i - 1)
-          val v = vb.getVariable
-          Some(ErrorMap(res.getErrorStatus))
-        } else None
+          val event = snmp.set(pdu, target(write))
+          val res = Option(event.getResponse)
+
+          res match {
+            case Some(res) => if (res.getErrorStatus > 0) {
+              val i = res.getErrorIndex()
+              val vb = res.get(i - 1)
+              val v = vb.getVariable
+              Some(ErrorMap(res.getErrorStatus))
+            } else None
+            case None => Some(AgentUnreachable)
+          }
+        } catch {
+          case e: NullPointerException => Some(AgentUnreachable)
+        }
       }
       case _ => Some(UnsupportedSyntax)
     }
@@ -163,6 +180,9 @@ class Snmp(
 
       Right(vbs)
     } catch {
+      // This is a little sketchy.  I know for sure that a NullPointer is thrown by snmp4j when
+      // the agent is unreachable.  However, there could be other conditions that cause a 
+      // NullPointerException.
       case n:NullPointerException => Left(AgentUnreachable)
     }
   }
