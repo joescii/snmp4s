@@ -29,6 +29,7 @@ case object WrongType			extends SnmpError
 case object WrongValue			extends SnmpError
 case object UnsupportedSyntax   extends SnmpError
 case object AgentUnreachable	extends SnmpError
+case object AgentUnknown		extends SnmpError
 case class ExceptionThrown(val e:Exception) extends SnmpError
 case class UndefinedError(val i:Int) extends SnmpError
 
@@ -117,7 +118,7 @@ class Snmp(
         }
       }
     } catch {
-      case e:NullPointerException => Left(AgentUnreachable)
+      case e:NullPointerException => Left(AgentUnknown)
     }
   }
 
@@ -144,7 +145,7 @@ class Snmp(
             case None => Some(AgentUnreachable)
           }
         } catch {
-          case e: NullPointerException => Some(AgentUnreachable)
+          case e: NullPointerException => Some(AgentUnknown)
         }
       }
       case _ => Some(UnsupportedSyntax)
@@ -169,21 +170,27 @@ class Snmp(
   def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[SnmpError,Seq[VarBind[A, T]]] = {
     try {
       val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
-      val vbs: Seq[VarBind[A, T]] = for {
-        event <- events
-        vb <- event.getVariableBindings()
-      } yield {
-        val o: Oid = vb.getOid()
-        val v = vb.getVariable
-        VarBind(obj(o.last), cast(obj, v))
-      }
+      
+      if(events.find(e => e.getVariableBindings() == null).isDefined) {
+        Left(AgentUnreachable)
+      } else {
+        val vbs: Seq[VarBind[A, T]] = for {
+          event <- events
+          vb <- event.getVariableBindings()
+        } yield {
+          val o: Oid = vb.getOid()
+          val v = vb.getVariable
+          
+          VarBind(obj(o.last), cast(obj, v))
+        }
 
-      Right(vbs)
+        Right(vbs)
+      }
     } catch {
-      // This is a little sketchy.  I know for sure that a NullPointer is thrown by snmp4j when
-      // the agent is unreachable.  However, there could be other conditions that cause a 
-      // NullPointerException.
-      case n:NullPointerException => Left(AgentUnreachable)
+      // This is a little sketchy.  I know for sure that a NullPointerException is thrown 
+      // by snmp4j when the agent DNS name is unresolved.  However, there could be other 
+      // conditions that cause a NullPointerException.
+      case n:NullPointerException => Left(AgentUnknown)
     }
   }
   

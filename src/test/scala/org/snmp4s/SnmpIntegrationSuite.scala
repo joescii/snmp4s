@@ -104,9 +104,9 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       walk(MyReadOnlyOid) should equal(Right(Seq()))
       
       val unresolvedName = new Snmp("invalid")
-      unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnreachable))
-      unresolvedName.get(IfAdminStatus(1)) should equal (Left(AgentUnreachable))
-      unresolvedName.set(IfAdminStatus(2) to Test) should equal (Some(AgentUnreachable))
+      unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))
+      unresolvedName.get(IfAdminStatus(1)) should equal (Left(AgentUnknown))
+      unresolvedName.set(IfAdminStatus(2) to Test) should equal (Some(AgentUnknown))
       
       ta map { _ stop }; ta = None      
       
