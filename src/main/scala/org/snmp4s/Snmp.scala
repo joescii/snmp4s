@@ -63,10 +63,7 @@ private object ErrorMap extends (Int => SnmpError) {
   }
 }
 
-/**
-  * Create one of these to do SNMP.
-  */
-class Snmp(
+case class SnmpParams(
     val ip:String = "127.0.0.1", 
     val port:Int = 161, 
     val read:String = "public", 
@@ -76,11 +73,7 @@ class Snmp(
     val timeout:Long = 1500) {
   
   private val addr = GenericAddress.parse(s"udp:$ip/$port")
-  private val map  = new DefaultUdpTransportMapping
-  private val snmp = new Snmp4j(map)
-  map.listen()
-    
-  private def target(comm:String) = {
+  def target(comm:String) = {
     val target = new CommunityTarget
     target.setCommunity(new OctetString(read))
     target.setAddress(addr)
@@ -89,7 +82,17 @@ class Snmp(
     target.setVersion(version.enum)
     target
   }
-  
+}
+
+/**
+  * Create one of these to do SNMP.
+  */
+class Snmp(params:SnmpParams) {
+  import params._;
+  private val map  = new DefaultUdpTransportMapping
+  private val snmp = new Snmp4j(map)
+  map.listen()
+    
   implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
@@ -152,21 +155,6 @@ class Snmp(
     }
   }
   
-  private def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Option[Variable] = { 
-    val c = m.runtimeClass
-    if(c == classOf[Int]) Some(new Integer32(v.asInstanceOf[Int]))
-    else if(c == classOf[String]) Some(new OctetString(v.asInstanceOf[String]))
-    else if(obj.enum.isDefined) Some(new Integer32(fromEnum(v)))
-    else None
-  }
-  
-  private def fromEnum[T](v:T):Int = {
-    val c = v.getClass()
-    val m = c.getDeclaredMethod("id")
-    val r = m.invoke(v)
-    r.asInstanceOf[Int]
-  }
-  
   def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[SnmpError,Seq[VarBind[A, T]]] = {
     try {
       val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
@@ -192,6 +180,21 @@ class Snmp(
       // conditions that cause a NullPointerException.
       case n:NullPointerException => Left(AgentUnknown)
     }
+  }
+  
+  private def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Option[Variable] = { 
+    val c = m.runtimeClass
+    if(c == classOf[Int]) Some(new Integer32(v.asInstanceOf[Int]))
+    else if(c == classOf[String]) Some(new OctetString(v.asInstanceOf[String]))
+    else if(obj.enum.isDefined) Some(new Integer32(fromEnum(v)))
+    else None
+  }
+  
+  private def fromEnum[T](v:T):Int = {
+    val c = v.getClass()
+    val m = c.getDeclaredMethod("id")
+    val r = m.invoke(v)
+    r.asInstanceOf[Int]
   }
   
   // TODO: Handle other types
