@@ -1,5 +1,12 @@
 **SNMP4S** is an idiomatic, type safe Scala wrapper on top of `SNMP4J`_.  The manifest vision for SNMP4S is to have an SBT plugin which will allow MIBs to be part of the src directory.  Those MIBs would then be compiled into Scala objects.  The compiled MIBs along with the base SNMP4S libraries will form a powerful DSL for manipulating SNMP data.  
 
+Architecture
+------------
+**SNMP4S** consists of three projects
+1. snmp4s-core: The wrapper around SNMP4J that does the work (licensed under `APL 2.0`_.)
+2. snmp4s-gen:  The code that generates OID case objects (licensed under `GPL 3.0`_.)
+3. snmp4s-sbt:  The SBT plugin that utilizes snmp4s-gen (licesned under `GPL 3.0`_.)
+
 Design Goals
 ------------
 1. Provide a powerful DSL that is a pleasure to use.
@@ -147,7 +154,7 @@ Pull requests are welcomed.
 License
 -------
 
-*snmp4s* is licensed under `APL 2.0`_.
+*snmp4s-core* is licensed under `APL 2.0`_.
 
 Copyright 2013 org.snmp4s
 
@@ -163,6 +170,12 @@ Copyright 2013 org.snmp4s
    See the License for the specific language governing permissions and
    limitations under the License.
 
+*snmp4s-gen* and *snmp4s-sbt* are licensed under `GPL 3.0`_.
+
+While I prefer APL, *snmp4s-gen* and hence *snmp4s-sbt* utilize `Mibble`_ which is a GPL-licensed library.  Fortunately for any use cases I have imagined, you will only use *snmp4s-gen* and *snmp4s-sbt* in development.  Of the three projects, only *snmp4s-core* needs to be utilized by your running application.
+
 .. _SNMP4J: http://www.snmp4j.org/
 .. _APL 2.0: http://www.apache.org/licenses/LICENSE-2.0
+.. _GPL 3.0: http://www.gnu.org/licenses/gpl.html
 .. _akka: http://akka.io/
+.. _mibble: http://www.mibble.org/index.html
