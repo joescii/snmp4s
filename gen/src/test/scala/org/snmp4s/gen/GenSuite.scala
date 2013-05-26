@@ -39,8 +39,6 @@ class GenSuite extends WordSpec with ShouldMatchers {
       
       val simMode = name2oid.get("agentppSimMode").get
       val code = g.code(simMode)
-      
-      code should equal ("""case object AgentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int]""")
     }
     
     "generate code for IF-MIB" in {
@@ -51,11 +49,21 @@ class GenSuite extends WordSpec with ShouldMatchers {
       val ifDescr = name2oid.get("ifDescr").get
       val ifSpeed = name2oid.get("ifSpeed").get
       val ifLastChange = name2oid.get("ifLastChange").get
+      val ifAdminStatus = name2oid.get("ifAdminStatus").get
       
       g.code(ifDescr) should equal ("""case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")""")
       g.code(ifMtu) should equal ("""case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu")""")
       g.code(ifSpeed) should equal ("""case object IfSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,5), "ifSpeed")""")
       g.code(ifLastChange) should equal ("""case object IfLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,9), "ifLastChange")""")
+      
+      g.code(ifAdminStatus) should equal ("""object IfAdminStatus_enum extends EnumInteger {
+  type IfAdminStatus = Value
+  val Up = Value(1, "up")
+  val Down = Value(2, "down")
+  val Testing = Value(3, "testing")
+}
+case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus", Some(IfAdminStatus_enum))""")
+
     }
   }
 }
