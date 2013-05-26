@@ -3,6 +3,7 @@
 Architecture
 ------------
 **SNMP4S** consists of three projects
+
 1. snmp4s-core: The wrapper around SNMP4J that does the work (licensed under `APL 2.0`_.)
 2. snmp4s-gen:  The code that generates OID case objects (licensed under `GPL 3.0`_.)
 3. snmp4s-sbt:  The SBT plugin that utilizes snmp4s-gen (licesned under `GPL 3.0`_.)
