@@ -1,8 +1,8 @@
 **SNMP4S** is an idiomatic, type safe Scala wrapper on top of `SNMP4J`_.  The manifest vision for SNMP4S is to have an SBT plugin which will allow MIBs to be part of the src directory.  Those MIBs would then be compiled into Scala objects.  The compiled MIBs along with the base SNMP4S libraries will form a powerful DSL for manipulating SNMP data.  
 
-Architecture
-------------
-**SNMP4S** consists of three projects
+Components
+----------
+**SNMP4S** consists of three components
 
 1. snmp4s-core: The wrapper around SNMP4J that does the work (licensed under `APL 2.0`_.)
 2. snmp4s-gen:  The code that generates OID case objects (licensed under `GPL 3.0`_.)
