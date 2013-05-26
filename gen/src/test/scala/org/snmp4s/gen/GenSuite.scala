@@ -43,7 +43,7 @@ class GenSuite extends WordSpec with ShouldMatchers {
     
     "generate code for IF-MIB" in {
       val g = new Gen
-      def ifMib = g.load("IF-MIB")
+      def ifMib = g.load(BuiltIn.IfMib)
       val name2oid = Util.name2oid(ifMib)
       val ifMtu = name2oid.get("ifMtu").get
       val ifDescr = name2oid.get("ifDescr").get

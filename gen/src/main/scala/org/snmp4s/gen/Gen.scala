@@ -11,6 +11,10 @@ import net.percederberg.mibble.`type`._
 import java.io.File
 import scala.collection.JavaConversions._
 
+object BuiltIn {
+  val IfMib = "IF-MIB"
+}
+
 protected object Util {
   def name2oid(mib:Mib) = {
     val syms = mib.getAllSymbols()
