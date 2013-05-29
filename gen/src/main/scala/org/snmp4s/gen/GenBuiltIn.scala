@@ -43,7 +43,7 @@ object GenBuiltIn extends App {
     val line = jar.getInputStream(e).lines.find(Pattern.findFirstIn(_).isDefined).get
     line match {
       case Pattern(mib) => 
-        val camel = mib.split("-").map(s => s.substring(0, 1).toUpperCase + s.substring(1).toLowerCase).mkString
+        val camel = Util.camel(mib)
         val code = s"""  val $camel = "$mib""""
         code
       case _ => ""

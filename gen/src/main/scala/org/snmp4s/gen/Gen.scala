@@ -22,6 +22,8 @@ protected object Util {
         s.getName -> s
       }).toMap
   }
+  
+  def camel(mib:String) = mib.split("-").map(s => s.substring(0, 1).toUpperCase + s.substring(1).toLowerCase).mkString
 }
 
 class Gen {
@@ -46,6 +48,19 @@ class Gen {
           None
       }
     }).flatten.toSeq
+  }
+  
+  def code(pkg:String, mib:Mib):String = {
+    val syms = mib.getAllSymbols()
+    "package " + pkg + "." + Util.camel(mib.getName()) +
+    (for {
+        sym <- syms
+        if sym.isInstanceOf[MibValueSymbol]
+        if sym.asInstanceOf[MibValueSymbol].getChildCount() == 0
+      } yield {
+        val s = sym.asInstanceOf[MibValueSymbol]
+        code(s)
+      }).mkString("\n")
   }
   
   def code(oid:MibValueSymbol):String = {
@@ -108,6 +123,7 @@ class Gen {
   
   private val syntaxMap = Map(
     "INTEGER" -> "Int",
-    "OCTET STRING" -> "String"
+    "OCTET STRING" -> "String",
+    "OBJECT IDENTIFIER" -> "Int"
   )
 }

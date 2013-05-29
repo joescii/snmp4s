@@ -20,7 +20,15 @@ object TestMibs {
     val Test = Value(3, "test")
   }
   
-  case object AgentppSimMode extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int] 
+  object AgentppSimMode_enum extends EnumInteger {
+    type AgentppSimMode = Value
+    val Oper = Value(1, "oper")
+    val Config = Value(2, "config")
+  }
+  case object AgentppSimMode extends AccessibleObject[ReadWrite, AgentppSimMode_enum.Value](Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode", Some(AgentppSimMode_enum)) with Scalar[ReadWrite, AgentppSimMode_enum.Value]
+  case object AgentppSimDeleteRow extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,2), "agentppSimDeleteRow") with Scalar[ReadWrite, Int]
+  case object AgentppSimDeleteTableContents extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,3), "agentppSimDeleteTableContents") with Scalar[ReadWrite, Int]
+  
   case object IfIndex        extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
   case object IfDescr		 extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
   case object IfAdminStatus  extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value]   (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus", Some(IfAdminStatus_enum)) 
