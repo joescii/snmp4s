@@ -1,3 +1,8 @@
+/*
+ * Copyright 2013 org.snmp4s
+ * Distributed under the terms of the GNU General Public License v3
+ */
+
 package org.snmp4s.gen
 
 /**
