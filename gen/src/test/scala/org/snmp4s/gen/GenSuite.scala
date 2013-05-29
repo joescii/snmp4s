@@ -15,7 +15,7 @@ class GenSuite extends WordSpec with ShouldMatchers {
   "A Generator" should {
     "Load agent mib" in {
       val g = new Gen
-      val ms = g.load(new File("gen/src/test/mibs"))
+      val ms = g.load(new File("src/test/mibs"))
       val name2mib = ms.map { m => m.getName -> m }.toMap
 
       ms.map { _ getName }.toSet should equal (Set(
@@ -68,7 +68,7 @@ case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum
     
     "generate code for agent MIB" in {
       val g = new Gen
-      val ms = g.load(new File("gen/src/test/mibs"))
+      val ms = g.load(new File("src/test/mibs"))
       val name2mib = ms.map { m => m.getName -> m }.toMap
       val sim = name2mib.get("AGENTPP-SIMULATION-MIB")
       sim.isDefined should equal(true)

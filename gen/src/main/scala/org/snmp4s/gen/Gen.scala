@@ -33,6 +33,8 @@ class Gen {
   }
   
   def load(file:File):Seq[Mib] = {
+    require(file.isDirectory(), "The file must be a directory")
+    require(file.canRead(), "The directory must be readable")
     val loader = new MibLoader
     loader.addDir(file)
     
@@ -72,8 +74,8 @@ class Gen {
       val octets = oid.getValue.toString.replace(".", ",")
       val (scalaType, enumArg, typeCode) = syntax(objName, snmp.getSyntax)
       
-      val code = typeCode + s"""case object $objName extends AccessibleObject[$access, $scalaType](Seq($octets), "$name"$enumArg)"""
-      if(oid.isScalar) code + s" with Scalar[$access, $scalaType]"
+      val code = typeCode + "case object "+objName+" extends AccessibleObject["+access+", "+scalaType+"](Seq("+octets+"), \""+name+"\""+enumArg+")"
+      if(oid.isScalar) code + " with Scalar["+access+", "+scalaType+"]"
       else code
     } else {
       ""
@@ -101,7 +103,7 @@ class Gen {
       val v = s.getValue
       val nl = s.getName
       val nu = nl.substring(0, 1).toUpperCase() + nl.substring(1)
-      s"""  val $nu = Value($v, "$nl")\n"""
+      "  val "+nu+" = Value("+v+", \""+nl+"\")\n"
     }
     val typeTail = "}\n"
     

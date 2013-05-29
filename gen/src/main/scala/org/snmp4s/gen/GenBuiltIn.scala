@@ -44,7 +44,7 @@ object GenBuiltIn extends App {
     line match {
       case Pattern(mib) => 
         val camel = Util.camel(mib)
-        val code = s"""  val $camel = "$mib""""
+        val code = "  val "+camel+" = \""+mib+"\""
         code
       case _ => ""
     }

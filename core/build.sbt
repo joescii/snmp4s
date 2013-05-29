@@ -2,6 +2,10 @@ name := "snmp4s-core"
 
 version := "0.1.0"
 
+scalaVersion := "2.10.1"
+
+scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps", "-language:implicitConversions")
+
 libraryDependencies ++= Seq(
   "org.snmp4j" % "snmp4j" % "2.2.1",
   "org.snmp4j" % "snmp4j-agent" % "2.0.7" % "test",

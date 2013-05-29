@@ -10,7 +10,7 @@ object Snmp4sSbtPlugin extends Plugin
     // to automatically add them, do
     val snmp4sSettings = Seq(
         builtInMibsSetting := "IfMib",
-        genMibsTask <<= builtInMibsSetting map { str => println(str) }
+        genMibsTask <<= builtInMibsSetting map { mib =>  }
     )
 
     // alternatively, by overriding `settings`, they could be automatically added to a Project
