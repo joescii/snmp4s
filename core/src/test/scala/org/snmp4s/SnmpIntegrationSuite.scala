@@ -33,15 +33,17 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   
   "An Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
-      get(AgentppSimMode(0)) should equal (Right(1))
+      import AgentppSimMode_enum._
+      get(AgentppSimMode(0)) should equal (Right(Oper))
     }
     
     "be able to set value 2 on Read-Write OID agentppSimMode, read it back, and set it back to 1 on our simulator" in {
-      get(AgentppSimMode) should equal (Right(1))
-      set(AgentppSimMode to 2) should equal (None)
-      get(AgentppSimMode) should equal (Right(2))
-      set(AgentppSimMode to 1) should equal (None)
-      get(AgentppSimMode) should equal (Right(1))
+      import AgentppSimMode_enum._
+      get(AgentppSimMode) should equal (Right(Oper))
+      set(AgentppSimMode to Config) should equal (None)
+      get(AgentppSimMode) should equal (Right(Config))
+      set(AgentppSimMode to Oper) should equal (None)
+      get(AgentppSimMode) should equal (Right(Oper))
     }
     
     "be able to get Read-Only OID ifIndex.1" in {

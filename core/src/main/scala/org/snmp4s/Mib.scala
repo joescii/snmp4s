@@ -37,8 +37,7 @@ object Mib {
   /**
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
-  implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A, T]):DataObject[A, T] = 
-    new DataObjectInst[A, T](s.oid ++ 0, s.name+".0")
+  implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A, T]):DataObject[A, T] = s(0)
 }
 
 import Mib._
@@ -157,7 +156,7 @@ abstract class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String
   * snmp.set(agentppSimMode to 2)
   * </code> 
   */
-trait Scalar[A <: MaxAccess, T] extends MibObject[A] 
+trait Scalar[A <: MaxAccess, T] extends AccessibleObject[A, T] 
 
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
