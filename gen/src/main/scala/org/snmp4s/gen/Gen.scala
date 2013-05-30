@@ -11,7 +11,7 @@ import net.percederberg.mibble.`type`._
 import java.io.File
 import scala.collection.JavaConversions._
 
-protected object Util {
+object Util {
   def name2oid(mib:Mib) = {
     val syms = mib.getAllSymbols()
     (for {
