@@ -54,7 +54,8 @@ class Gen {
   
   def code(pkg:String, mib:Mib):String = {
     val syms = mib.getAllSymbols()
-    "package " + pkg + "." + Util.camel(mib.getName()) +
+    "package " + pkg + "." + Util.camel(mib.getName()) + "\n" +
+    "import org.snmp4s._\n" +
     (for {
         sym <- syms
         if sym.isInstanceOf[MibValueSymbol]
@@ -65,9 +66,12 @@ class Gen {
       }).mkString("\n")
   }
   
+  private def toObjName(name:String):String = 
+    name.split("-").map(s => s.substring(0, 1).toUpperCase + s.substring(1)).mkString
+  
   def code(oid:MibValueSymbol):String = {
     val name = oid.getName
-    val objName = name.substring(0, 1).toUpperCase() + name.substring(1)
+    val objName = toObjName(name)
     if(oid.getType.isInstanceOf[SnmpObjectType]) {
       val snmp = oid.getType.asInstanceOf[SnmpObjectType]
       val access = accessMap.get(snmp.getAccess()).get
@@ -102,7 +106,7 @@ class Gen {
     } yield {
       val v = s.getValue
       val nl = s.getName
-      val nu = nl.substring(0, 1).toUpperCase() + nl.substring(1)
+      val nu = toObjName(nl)
       "  val "+nu+" = Value("+v+", \""+nl+"\")\n"
     }
     val typeTail = "}\n"

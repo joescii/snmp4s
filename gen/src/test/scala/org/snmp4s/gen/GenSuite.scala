@@ -75,6 +75,8 @@ case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum
       
       g.code("org.snmp4s.mibs", sim.get) should equal (
 """package org.snmp4s.mibs.AgentppSimulationMib
+import org.snmp4s._
+
 object AgentppSimMode_enum extends EnumInteger {
   type AgentppSimMode = Value
   val Oper = Value(1, "oper")
