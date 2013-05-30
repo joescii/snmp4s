@@ -111,7 +111,7 @@ protected trait Writable extends MaxAccess
 /**
   * A MIB object with MAX-ACCESS "Not-accessible"
   */
-trait NoAccess extends MaxAccess
+trait NotAccessible extends MaxAccess
 
 /**
   * A MIB object with MAX-ACCESS "Accessible-for-notify"
