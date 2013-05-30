@@ -27,9 +27,9 @@ protected object Util {
 }
 
 class Gen {
-  def load(name:String):Mib = {
+  def load(mib:BuiltIn.Value):Mib = {
     val loader = new MibLoader
-    loader load name
+    loader.load(mib.toString())
   }
   
   def load(file:File):Seq[Mib] = {

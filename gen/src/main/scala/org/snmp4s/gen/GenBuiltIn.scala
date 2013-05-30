@@ -16,8 +16,8 @@ import java.io.PrintStream
   * Generates the BuiltIn object because there are so many MIBs included with Mibble 
   */
 object GenBuiltIn extends App {
-  val src = if(args.length > 0) args(0) else "gen/lib/mibble-mibs-2.9.3.jar"
-  val dst = if(args.length > 1) args(1) else "gen/src/main/scala/org/snmp4s/gen/BuiltIn.scala"
+  val src = if(args.length > 0) args(0) else "lib/mibble-mibs-2.9.3.jar"
+  val dst = if(args.length > 1) args(1) else "src/main/scala/org/snmp4s/gen/BuiltIn.scala"
     
   val srcFile = new File(src)
   val dstFile = new File(dst)
@@ -44,7 +44,7 @@ object GenBuiltIn extends App {
     line match {
       case Pattern(mib) => 
         val camel = Util.camel(mib)
-        val code = "  val "+camel+" = \""+mib+"\""
+        val code = "  val "+camel+" = Value(\""+mib+"\")"
         code
       case _ => ""
     }
@@ -57,7 +57,8 @@ object GenBuiltIn extends App {
   * MIBs that are built into this library complements of Mibble.
   * 
   */
-object BuiltIn {
+object BuiltIn extends Enumeration {
+  type BuiltIn = Value
 """+body.mkString("\n")+"\n}"
 
   val ps = new PrintStream(dstFile)
