@@ -89,15 +89,16 @@ case object AgentppSimDeleteTableContents extends AccessibleObject[ReadWrite, In
 """)
     }
     
-    "generate code for ADSL-LINE-MIB" in {
+    "generate code for all built in mibs" in {
       val g = new Gen
-      def adslLineMib = g.load(BuiltIn.AdslLineMib)
-      
-      try {
-        g.code("org.snmp4s.mibs", adslLineMib)
-      } catch {
-        case e:Exception => fail("Exception was thrown while generating ADSL-LINE-MIB")
+      BuiltIn.values map { mib =>
+        try {
+          g.code("org.snmp4s.mibs", g load mib)
+        } catch {
+          case e: Exception => fail("Exception was thrown while generating "+mib)
+        }
       }
+      
     }
   }
 }

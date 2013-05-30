@@ -131,6 +131,7 @@ class Gen {
     "INTEGER" -> "Int",
     "OCTET STRING" -> "String",
     "OBJECT IDENTIFIER" -> "Int",
-    "BITS" -> "Int"
+    "BITS" -> "Int",
+    "CHOICE" -> "String"
   )
 }
