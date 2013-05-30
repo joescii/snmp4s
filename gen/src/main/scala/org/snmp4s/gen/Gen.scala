@@ -130,6 +130,7 @@ class Gen {
   private val syntaxMap = Map(
     "INTEGER" -> "Int",
     "OCTET STRING" -> "String",
-    "OBJECT IDENTIFIER" -> "Int"
+    "OBJECT IDENTIFIER" -> "Int",
+    "BITS" -> "Int"
   )
 }

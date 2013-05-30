@@ -87,6 +87,17 @@ case object AgentppSimDeleteRow extends AccessibleObject[ReadWrite, Int](Seq(1,3
 case object AgentppSimDeleteTableContents extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,4,1,4976,2,1,3), "agentppSimDeleteTableContents") with Scalar[ReadWrite, Int]
 
 """)
-   }
+    }
+    
+    "generate code for ADSL-LINE-MIB" in {
+      val g = new Gen
+      def adslLineMib = g.load(BuiltIn.AdslLineMib)
+      
+      try {
+        g.code("org.snmp4s.mibs", adslLineMib)
+      } catch {
+        case e:Exception => fail("Exception was thrown while generating ADSL-LINE-MIB")
+      }
+    }
   }
 }
