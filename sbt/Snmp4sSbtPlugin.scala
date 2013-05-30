@@ -4,25 +4,24 @@ import org.snmp4s.gen._
 
 object Snmp4sSbtPlugin extends Plugin
 {
-  val builtInMibsSetting = SettingKey[Seq[BuiltIn.Value]]("snmp4s-built-in-mibs")
+  val snmp4sBuiltInMibs = SettingKey[Seq[BuiltIn.Value]]("snmp4s-built-in-mibs")
+  val snmp4sMibPackage  = SettingKey[String]("snmp4s-mib-package")
 
   val snmp4sSettings = Seq(
-    builtInMibsSetting := Seq(BuiltIn.IfMib),
-    sourceGenerators in Compile <+= sourceManaged in Compile map { outDir: File =>
-      genMibs(outDir / "mibs")
+    snmp4sBuiltInMibs := Seq(),
+    snmp4sMibPackage := "org.snmp4s.mib",
+    sourceGenerators in Compile <+= (sourceManaged in Compile, snmp4sBuiltInMibs, snmp4sMibPackage) map { (outDir: File, mibs: Seq[BuiltIn.Value], pkg: String) =>
+      genMibs(outDir / "mibs", mibs, pkg)
     }
   )
 
 
-  def genMibs(dst:File): Seq[File] = { 
-    val mibs = Seq(BuiltIn.IfMib) 
-    println("Compiling " + mibs)
+  def genMibs(dst:File, mibs:Seq[BuiltIn.Value], pkg:String) = { 
     mibs map { mib => 
-      val file = dst / "org" / "snmp4s" / "mib" / "IfMib.scala"
+      val file = pkg.split("\\.").foldLeft(dst){ case (d, next) => d / next } / (org.snmp4s.gen.Util.camel(mib.toString)+".scala")
       val g = new Gen
-      IO.write(file, g.code("org.snmp4s.mib", g.load(mib)))
+      IO.write(file, g.code(pkg, g.load(mib)))
       file 
     }
-    
   }
 }
