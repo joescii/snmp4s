@@ -17,10 +17,12 @@ object Snmp4sSbtPlugin extends Plugin
 
 
   def genMibs(dst:File, mibs:Seq[BuiltIn.Value], pkg:String) = { 
+    val g = new Gen(pkg)
+    val dir = pkg.split("\\.").foldLeft(dst){ case (d, next) => d / next }
+
     mibs map { mib => 
-      val file = pkg.split("\\.").foldLeft(dst){ case (d, next) => d / next } / (org.snmp4s.gen.Util.camel(mib.toString)+".scala")
-      val g = new Gen
-      IO.write(file, g.code(pkg, g.load(mib)))
+      val file = dir / (org.snmp4s.gen.Util.camel(mib.toString)+".scala")
+      IO.write(file, g.code(mib))
       file 
     }
   }

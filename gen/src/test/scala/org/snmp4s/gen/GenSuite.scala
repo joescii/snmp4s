@@ -11,11 +11,10 @@ import java.io.File
 import scala.collection.JavaConversions._
 import net.percederberg.mibble._
 
-class GenSuite extends WordSpec with ShouldMatchers {
+class GenSuite extends Gen("org.snmp4s.test.mibs") with WordSpec with ShouldMatchers {
   "A Generator" should {
     "Load agent mib" in {
-      val g = new Gen
-      val ms = g.load(new File("src/test/mibs"))
+      val ms = load(new File("src/test/mibs"))
       val name2mib = ms.map { m => m.getName -> m }.toMap
 
       ms.map { _ getName }.toSet should equal (Set(
@@ -38,12 +37,10 @@ class GenSuite extends WordSpec with ShouldMatchers {
       ))
       
       val simMode = name2oid.get("agentppSimMode").get
-      val code = g.code(simMode)
     }
     
     "generate code for IF-MIB" in {
-      val g = new Gen
-      def ifMib = g.load(BuiltIn.IfMib)
+      def ifMib = load(BuiltIn.IfMib)
       val name2oid = Util.name2oid(ifMib)
       val ifMtu = name2oid.get("ifMtu").get
       val ifDescr = name2oid.get("ifDescr").get
@@ -51,12 +48,12 @@ class GenSuite extends WordSpec with ShouldMatchers {
       val ifLastChange = name2oid.get("ifLastChange").get
       val ifAdminStatus = name2oid.get("ifAdminStatus").get
       
-      g.code(ifDescr) should equal ("""case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")""")
-      g.code(ifMtu) should equal ("""case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu")""")
-      g.code(ifSpeed) should equal ("""case object IfSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,5), "ifSpeed")""")
-      g.code(ifLastChange) should equal ("""case object IfLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,9), "ifLastChange")""")
+      code(ifDescr) should equal ("""case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")""")
+      code(ifMtu) should equal ("""case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu")""")
+      code(ifSpeed) should equal ("""case object IfSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,5), "ifSpeed")""")
+      code(ifLastChange) should equal ("""case object IfLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,9), "ifLastChange")""")
       
-      g.code(ifAdminStatus) should equal ("""object IfAdminStatus_enum extends EnumInteger {
+      code(ifAdminStatus) should equal ("""object IfAdminStatus_enum extends EnumInteger {
   type IfAdminStatus = Value
   val Up = Value(1, "up")
   val Down = Value(2, "down")
@@ -67,14 +64,13 @@ case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum
     }
     
     "generate code for agent MIB" in {
-      val g = new Gen
-      val ms = g.load(new File("src/test/mibs"))
+      val ms = load(new File("src/test/mibs"))
       val name2mib = ms.map { m => m.getName -> m }.toMap
       val sim = name2mib.get("AGENTPP-SIMULATION-MIB")
       sim.isDefined should equal(true)
       
-      g.code("org.snmp4s.mibs", sim.get) should equal (
-"""package org.snmp4s.mibs.AgentppSimulationMib
+      code(sim.get) should equal (
+"""package org.snmp4s.test.mibs.AgentppSimulationMib
 import org.snmp4s._
 
 object AgentppSimMode_enum extends EnumInteger {
@@ -90,10 +86,9 @@ case object AgentppSimDeleteTableContents extends AccessibleObject[ReadWrite, In
     }
     
     "generate code for all built in mibs" in {
-      val g = new Gen
       BuiltIn.values map { mib =>
         try {
-          g.code("org.snmp4s.mibs", g load mib)
+          code(load(mib))
         } catch {
           case e: Exception => fail("Exception was thrown while generating "+mib)
         }

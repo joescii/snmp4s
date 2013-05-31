@@ -26,13 +26,16 @@ object Util {
   def camel(mib:String) = mib.split("-").map(s => s.substring(0, 1).toUpperCase + s.substring(1).toLowerCase).mkString
 }
 
-class Gen {
-  def load(mib:BuiltIn.Value):Mib = {
+class Gen(pkg:String) {
+  def code(mib:BuiltIn.Value):String = code(load(mib))
+  def code(dir:File):Map[String,String] = load(dir).map { mib => mib.getName -> code(mib) }.toMap
+  
+  protected def load(mib:BuiltIn.Value):Mib = {
     val loader = new MibLoader
     loader.load(mib.toString())
   }
   
-  def load(file:File):Seq[Mib] = {
+  protected def load(file:File):Seq[Mib] = {
     require(file.isDirectory(), "The file must be a directory")
     require(file.canRead(), "The directory must be readable")
     val loader = new MibLoader
@@ -52,7 +55,7 @@ class Gen {
     }).flatten.toSeq
   }
   
-  def code(pkg:String, mib:Mib):String = {
+  protected def code(mib:Mib):String = {
     val syms = mib.getAllSymbols()
     "package " + pkg + "." + Util.camel(mib.getName()) + "\n" +
     "import org.snmp4s._\n" +
