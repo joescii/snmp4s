@@ -75,6 +75,8 @@ trait MibObject[A <: MaxAccess] extends Equals {
     val prime = 41
     prime + oid.hashCode
   }
+  
+  override def toString = name
 }
 
 /**
@@ -143,7 +145,7 @@ trait ReadCreate extends MaxAccess with Readable with Writable
   */
 abstract class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) 
   extends (Oid => DataObject[A, T]) with MibObject[A] {
-  def apply(index:Oid) = DataObjectInst[A, T](oid ++ index, name+"."+index, enum) 
+  def apply(index:Oid) = DataObjectInst[A, T](oid ++ index, name+"."+(index.mkString(".")), enum) 
   def unapply(obj:DataObjectInst[A, T]):Option[Oid] = Some(obj.oid.last)
 }
 
@@ -161,7 +163,7 @@ trait Scalar[A <: MaxAccess, T] extends AccessibleObject[A, T]
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
   */
-case class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) extends DataObject[A, T] 
+case class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) extends DataObject[A, T]
 
 /**
   * Wrapper of a <code>MibObject</code> and it's respective value for

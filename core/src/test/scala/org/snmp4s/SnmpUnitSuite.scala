@@ -23,6 +23,11 @@ class SnmpUnitSuite extends WordSpec with ShouldMatchers {
       val child = MyReadOnlyOid(0)
       child.oid should equal(Seq(1,2,3,4,1,0))
     }
+    
+    "have a good toString()" in {
+      MyReadOnlyOid.toString should equal ("myReadOnlyOid")
+      MyReadOnlyOid(0).toString should equal("myReadOnlyOid.0")
+    }
   }  
   
   "A TextualConvention" should {
