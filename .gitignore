@@ -16,4 +16,4 @@ src_managed/
 .settings/
 
 # Snmp4j stuff
-SNMP4JTestAgentBC.cfg
+*/SNMP4JTestAgent*.cfg
