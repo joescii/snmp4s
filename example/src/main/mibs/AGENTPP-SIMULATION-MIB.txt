@@ -1,0 +1,124 @@
+AGENTPP-SIMULATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	OBJECT-GROUP,
+	MODULE-COMPLIANCE
+FROM SNMPv2-CONF
+	agentppModules,
+	agentppGeneric
+FROM AGENTPP-GLOBAL-REG
+	enterprises,
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY,
+	OBJECT-TYPE
+FROM SNMPv2-SMI;
+
+agentppSimMIB MODULE-IDENTITY
+	LAST-UPDATED "200105172302Z"	-- May 17, 2001 11:02:00 PM
+	ORGANIZATION "AGENT++"
+	CONTACT-INFO
+		"fock@agentpp.com"
+	DESCRIPTION
+		"MIB module for managed objects which can be
+		       used to configure and run simulation agents 
+		using the AGENT++ framework."
+	REVISION "200105172302Z"	-- May 17, 2001 11:02:00 PM
+	DESCRIPTION
+		"Added OBJECT-GROUP definition."
+	REVISION "9911020000Z"	-- Nov 2, 1999 12:00:00 AM
+	DESCRIPTION
+		"The initial version."
+	REVISION "9912180000Z"	-- Dec 18, 1999 12:00:00 AM
+	DESCRIPTION
+		"Added agentppGeneric to the IMPORTS."
+	REVISION "0003020000Z"	-- Mar 2, 1900 12:00:00 AM
+	DESCRIPTION
+		"Fixed module identity name."
+	REVISION "0005230000Z"	-- May 23, 1900 12:00:00 AM
+	DESCRIPTION
+		"Added objects to delete dynamically created
+		objects from simulation agents."
+ -- 1.3.6.1.4.1.4976.1.1.2 --  ::= { agentppModules 2 }
+
+
+agentppSim OBJECT-IDENTITY
+	STATUS current
+	DESCRIPTION
+		"Sub-tree for configuration of simulation agents."
+ -- 1.3.6.1.4.1.4976.2.1 --  ::= { agentppGeneric 1 }
+
+agentppSimMode OBJECT-TYPE
+	SYNTAX INTEGER {
+			oper(1),
+			config(2) }
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+		"Setting this object to config(2) enables the
+		configuration mode of all simulated MIB objects.
+		Each such object instance can then be written or
+		created, even though its MAX-ACCESS rights are 
+		read-only or read-write."
+	DEFVAL { oper }
+ -- 1.3.6.1.4.1.4976.2.1.1 --  ::= { agentppSim 1 }
+
+
+agentppSimDeleteRow OBJECT-TYPE
+	SYNTAX OBJECT IDENTIFIER
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+		"Setting this object to an object identifier of
+		an arbitrary instance of a table's row, will 
+		remove the row from the target table. If the 
+		object identifier does not denote such a row,
+		wrongValue is returned. 
+		For example, if your table has the oid 1.3.6.1.3.1
+		and the the index of that table is an integer,
+		then you will have to provide the following oid
+		in order to delete the row with index 100: 
+		              1.3.6.1.3.1.1.1.100"
+ -- 1.3.6.1.4.1.4976.2.1.2 --  ::= { agentppSim 2 }
+
+
+agentppSimDeleteTableContents OBJECT-TYPE
+	SYNTAX OBJECT IDENTIFIER
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+		"Setting this object to the object identifier of
+		a table entry object will delete all rows of 
+		that table. If the given object identifier does
+		not denote a table known by the simulation agent, 
+		wrongValue is returned.
+		For example, if your table has the oid
+		1.3.6.1.3.2, then the table entry object has the
+		the oid 1.3.6.1.3.2.1, which is the oid you have
+		to write to this object in order to delete the
+		table's contents."
+ -- 1.3.6.1.4.1.4976.2.1.3 --  ::= { agentppSim 3 }
+
+
+agentppSimBasicGroup OBJECT-GROUP
+	OBJECTS {
+		agentppSimMode,
+		agentppSimDeleteRow,
+		agentppSimDeleteTableContents }
+	STATUS current
+	DESCRIPTION
+		"Basic objects for an AGENT++ simulation agent."
+ -- 1.3.6.1.4.1.4976.2.1.4 --  ::= { agentppSim 4 }
+
+
+agentppSimCompliance MODULE-COMPLIANCE
+	STATUS current
+	DESCRIPTION
+		"Compliance definition for AGENT++ simulation agents."
+
+	MODULE 
+	MANDATORY-GROUPS {
+			agentppSimBasicGroup }
+
+ -- 1.3.6.1.4.1.4976.2.1.5 --  ::= { agentppSim 5 }
+
+END
