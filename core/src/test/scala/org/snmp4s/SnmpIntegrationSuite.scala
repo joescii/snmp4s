@@ -30,6 +30,8 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   
   import snmp._
   import TestMibs._
+  import IfMib._
+  import AgentppSimulationMib._
   
   "An Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
@@ -95,10 +97,10 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     
     "be able to pattern match against an OID" in {
       import IfAdminStatus_enum._
-      set(IfAdminStatus(2) to Test)
+      set(IfAdminStatus(2) to Testing)
       walk(IfAdminStatus) match {
         case Right(walk) => {
-          val testPorts = for(VarBind(IfAdminStatus(Seq(i)), Test) <- walk) yield i
+          val testPorts = for(VarBind(IfAdminStatus(Seq(i)), Testing) <- walk) yield i
           
           testPorts should equal (Seq(2))
         }
@@ -117,13 +119,13 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       val unresolvedName = new Snmp(SnmpParams("invalid"))
       unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))
       unresolvedName.get(IfAdminStatus(1)) should equal (Left(AgentUnknown))
-      unresolvedName.set(IfAdminStatus(2) to Test) should equal (Some(AgentUnknown))
+      unresolvedName.set(IfAdminStatus(2) to Testing) should equal (Some(AgentUnknown))
       
       ta map { _ stop }; ta = None      
       
       walk(IfAdminStatus) should equal (Left(AgentUnreachable))
       get(IfAdminStatus(1)) should equal (Left(AgentUnreachable))
-      set(IfAdminStatus(2) to Test) should equal (Some(AgentUnreachable))
+      set(IfAdminStatus(2) to Testing) should equal (Some(AgentUnreachable))
     }
   }
 }

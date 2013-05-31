@@ -402,7 +402,7 @@ data: */
                      MOAccessImpl.ACCESS_READ_ONLY);     // ifCounterDiscontinuityTime
 
     DefaultMOTable ifXTable =
-        new DefaultMOTable(new OID("1.3.6.1.2.1.31.1.1"), indexDef, columns);
+        new DefaultMOTable(new OID("1.3.6.1.2.1.31.1.1.1"), indexDef, columns);
     MOMutableTableModel model = (MOMutableTableModel) ifXTable.getModel();
     Variable[] rowValues1 = new Variable[] {
         new OctetString("Ethernet-0"),

@@ -16,6 +16,7 @@ import Mib._
 
 class SnmpUnitSuite extends WordSpec with ShouldMatchers {
   import TestMibs._
+  import IfMib._
   
   "A MibObject" should {
     "be a function that returns a child" in {
@@ -30,21 +31,21 @@ class SnmpUnitSuite extends WordSpec with ShouldMatchers {
       
       IfAdminStatus_enum(1) should equal (Up)
       IfAdminStatus_enum(2) should equal (Down)
-      IfAdminStatus_enum(3) should equal (Test)
+      IfAdminStatus_enum(3) should equal (Testing)
       
-      Up.toString   should equal ("up")
-      Down.toString should equal ("down")
-      Test.toString should equal ("test")
+      Up.toString      should equal ("up")
+      Down.toString    should equal ("down")
+      Testing.toString should equal ("testing")
       
-      Up.id   should equal (1)
-      Down.id should equal (2)
-      Test.id should equal (3)
+      Up.id      should equal (1)
+      Down.id    should equal (2)
+      Testing.id should equal (3)
       IfAdminStatus_enum.values.contains(Up) should equal (true)
       
       IfAdminStatus_enum(1) match {
         case Up =>
         case Down =>
-        case Test =>
+        case Testing =>
       }
     }    
   }
