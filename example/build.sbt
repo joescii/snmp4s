@@ -12,7 +12,7 @@ scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-language:postfi
 
 snmp4sSettings
 
-snmp4sBuiltInMibs := Seq(IfMib)
+snmp4sBuiltInMibs := Seq(IfMib, AdslLineMib)
 
 snmp4sMibPackage := "org.snmp4s.example.mib"
 
