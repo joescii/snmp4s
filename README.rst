@@ -1,24 +1,55 @@
-**SNMP4S** is an idiomatic, type safe Scala wrapper on top of `SNMP4J`_.  The manifest vision for SNMP4S is to have an SBT plugin which will allow MIBs to be part of the src directory.  Those MIBs would then be compiled into Scala objects.  The compiled MIBs along with the base SNMP4S libraries will form a powerful DSL for manipulating SNMP data.  
+**SNMP4S** is an idiomatic type-safe Scala DSL for SNMP.  This library begins with an SBT plugin which treats MIBs as source files.  These MIBs are parsed and compiled into Scala objects.  The compiled MIBs along with the base **SNMP4S** libraries form a powerful DSL for manipulating SNMP data.  
+
+Design Goals
+------------
+* Provide a powerful DSL that is a pleasure to use.
+* Reduce programmer mistakes by utilizing Scala's type system.
+* Generate code from the MIBs that define the SNMP interface to maximize the benefit of type safety.
+* Encapsulate all references to SNMP4J to allow changing out the underlying stack.
+* Provide multiple programming models for handling requests, responses, and errors (synchronous, asynchronous, excepting, etc)
 
 Components
 ----------
 **SNMP4S** consists of three components
 
-1. snmp4s-core: The wrapper around SNMP4J that does the work (licensed under `APL 2.0`_.)
-2. snmp4s-gen:  The code that generates OID case objects (licensed under `GPL 3.0`_.)
-3. snmp4s-sbt:  The SBT plugin that utilizes snmp4s-gen (licesned under `GPL 3.0`_.)
+1. snmp4s-core: The wrapper around `SNMP4J`_ that does the runtime work (licensed under `APL 2.0`_.)
+2. snmp4s-gen:  The code that utilizes `Mibble`_ to generate Scala code (licensed under `GPL 3.0`_.)
+3. snmp4s-sbt:  The SBT plugin that utilizes snmp4s-gen to compile MIBs (licesned under `GPL 3.0`_.)
 
-Design Goals
+Installation
 ------------
-1. Provide a powerful DSL that is a pleasure to use.
-2. Provide static type checking.
-3. Generate code from the MIBs that define the SNMP interface to maximize benefit of type safety.
-4. Encapsulate all references to SNMP4J to allow changing out the underlying stack.
-5. Provide an event-driven actor-based model for handling requests and responses.
+The latest release is **0.1.0**.  *snmp4s-core* is built against 2.10.1, but *snmp4s-gen* and *snmp4s-sbt* are built against 2.9.2 for use in SBT 0.12.x.
 
-Code That Works
+First, you need to add *snmp4s-sbt* as an SBT `Plugin`_ in your project.  Although **SNMP4S** is available from Maven Central, our dependency on `Mibble`_ will require a resolver in addition to the plugin declaration::
+
+  resolvers += "Mibble" at "http://maven.cloudhopper.com/repos/third-party/"
+
+  addSbtPlugin("org.snmp4s" % "snmp4s-sbt" % "0.1.0")
+
+Secondly, you need to add *snmp4s-core* as a dependency in your project build file.  Again, we require an additional resolver but this time for our dependency on `SNMP4J`_::
+
+  resolvers += "OO SNMP" at "https://oosnmp.net/dist/release/"
+
+  libraryDependencies += "org.snmp4s" %% "snmp4s-core" % "0.1.0"
+
+Configuration
+-------------
+
+Any MIBs that are built in as part of **SNMP4S** can be declared in your project build file (see the org.snmp4s.gen.BuiltIn scaladocs/source for an exhaustive list of available MIBs)::
+
+  import org.snmp4s.gen.BuiltIn._
+
+  snmp4sBuiltInMibs := Seq(IfMib, AdslLineMib)
+
+Custom MIBs are simply placed in the src/main/mibs directory of your project.  All files in the directory will be treated as a MIB regardless of filename::
+
+  ~/code/snmp4s/example/src/main/mibs $ ls -1
+  AGENTPP-GLOBAL-REG.txt
+  AGENTPP-SIMULATION-MIB.txt
+
+Code Examples That Work
 ---------------
-This can be done today::
+This can be done today.  See the *example* directory for a working project which utilizes **SNMP4S**::
 
   // Instantiate a new Snmp object, shown here with defaults for IP, port, community, etc.
   val snmp = new Snmp(SnmpParams(
@@ -31,37 +62,35 @@ This can be done today::
     timeout = 1500
   ))
 
-  // Define the MIB objects you want to manipulate 
-  // This part will one day be generated from the MIBs, so don't worry about how ugly it is.
-  case object AgentppSimMode extends AccessibleObject[ReadWrite, Int]
-    (Seq(1,3,6,1,4,1,4976,2,1,1), "agentppSimMode") with Scalar[ReadWrite, Int]
-  case object IfDescr extends AccessibleObject[ReadOnly, String]
-    (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  object IfAdminStatus_enum extends EnumInteger {
-    type IfAdminStatus = Value
-    val Up = Value(1, "up")
-    val Down = Value(2, "down")
-    val Test = Value(3, "test")
-  }
-  case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value]   
-    (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus") { override def enum() = Some(IfAdminStatus_enum) }
+  // Import some implicits
+  import Mib._
 
-  // While that code might be a mess to write until we have it generated, 
-  // you get to write elegant SNMP access code:
+  // Import the compiled MIB packages.  This package is settable via snmp4sMibPackage property
+  import org.snmp4s.mib._
 
-  // Get the scalar variable for agentppSimMode.0
-  snmp.get(AgentppSimMode(0)) match {
+  // Import the compiled MIBs you want to work with
+  import IfMib._
+  import AgentppSimulationMib._
+
+  // Get the value assigned to ifDescr.1
+  snmp.get(IfDescr(1)) match {
     case Left(err) => // Something bad happened
-    case Right(v)  => // v is set to the variable's value
+    case Right(v)  => // v is set to the ifDescr.1's value
   }
 
-  // Set the scalar to 2. Since agentppSimMode is a scalar, we can drop the (0) index.
-  snmp.set(AgentppSimMode to 2) match {
+  // Get ifNumber.0. Since it is a scalar, we can drop the (0) index.
+  snmp.get(IfNumber) match {
+    case Left(err) => // Something bad happened
+    case Right(v)  => // v is set to the ifNumber's value
+  }
+
+  // Set ifAlias.1 to "My Interface"
+  snmp.set(IfAlias(1) to "My Interface") match {
     case Some(err) => // Something bad happened
     case _         => // It worked
   }
 
-  // Walk ifDescr and return a tuple containing the index and the value
+  // Walk ifDescr and return tuples containing the index and the value
   snmp walk IfDescr match {
     case Left(err)   => Seq() // Something bad happened
     case Right(walk) => walk map { vb => (vb.obj.oid.last, vb.v) }
@@ -73,28 +102,23 @@ This can be done today::
   get(IfAdminStatus(1)) match {
     case Left(err) =>  // Something bad happened
     case Right(status) => status match {
-      case Up   =>  // I'm up
-      case Down =>  // I'm down
-      case Test =>  // I'm testing
+      case Up      =>  // I'm up
+      case Down    =>  // I'm down
+      case Testing =>  // I'm testing
     }
   }
 
   // Can pattern match against the OIDs
   val testPorts = snmp walk IfAdminStatus match {
     case Left(err)   => Seq() // Something bad happened
-    case Right(walk) => for(VarBind(IfAdminStatus(Seq(i)), Test) <- walk) yield i
+    case Right(walk) => for(VarBind(IfAdminStatus(Seq(i)), Testing) <- walk) yield i
   }
 
-Code That Doesn't Work
+Code Examples That Don't Work
 -----------------------
 As important as code that works, is code that doesn't.  These mistakes will not compile::
 
   val snmp = new Snmp(SnmpParams())
-
-  case object IfDescr extends AccessibleObject[ReadOnly, String]
-    (Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
-  case object IfAdminStatus extends AccessibleObject[ReadWrite, Int]
-    (Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus")
 
   // Cannot set a Read-only OID
   snmp.set(IfDescr(1) to "description")
@@ -118,35 +142,9 @@ As important as code that works, is code that doesn't.  These mistakes will not 
   // [error]           val descr:Either[String,Int] = snmp get IfDescr(1)
   // [error]                                               ^
 
-
-Futuristic Example Code
------------------------
-This is what I envision.  Note that ``IfIndex``, ``IfType``, ``Ethernet_csmacd`` etc were generated from the MIBs::
-
-  val snmp = new Snmp(SnmpParams()) // Instantiated with whatever params you want, including SNMPv3 stuff
-
-  val ethernetAdminStates = (for { 
-    varbind <- snmp walk IfIndex
-  } yield {
-    snmp.get(IfType(varbind.v)) match {
-      case Ethernet_csmacd => Some((varbind.v, snmp.get(IfAdminStatus(varbind.v))))
-	  case _ => None
-    }
-  }).flatten
-
-  // Can get multiple variables and they're all the correct type
-  val Either[String,(Int, String, Int)] = snmp.get(IfIndex(1), IfDescr(1), IfAdminStatus(1))
-
-
-If I really get around to doing something awesome, maybe I'll figure out how to minimize the number of messages
-transmitted to perform the previous block of code.  In particular, it should perform the ``walk``, perform the ``get``
-of all ``IfType`` in one PDU, then perform the ``IfAdminStatus`` gets in one PDU.
-
-I also hope to eventually use `akka`_ to support asynchronous handling of this API.
-
 Environment
 -----------
-Other than the usual need for git, sbt, and jdk, for this project sbt will need root access to run the test suites.  The integration tests use SNMP4J-Agent which needs to bind to port 161.  
+Other than the usual need for git, sbt, and jdk, sbt will need root access to run the test suites for the snmp4s-core project.  The integration tests use SNMP4J-Agent which needs to bind to port 161.  
 
 Contributions
 -------------
@@ -178,5 +176,5 @@ While I prefer APL, *snmp4s-gen* and hence *snmp4s-sbt* utilize `Mibble`_ which 
 .. _SNMP4J: http://www.snmp4j.org/
 .. _APL 2.0: http://www.apache.org/licenses/LICENSE-2.0
 .. _GPL 3.0: http://www.gnu.org/licenses/gpl.html
-.. _akka: http://akka.io/
-.. _mibble: http://www.mibble.org/index.html
+.. _Mibble: http://www.mibble.org/index.html
+.. _Plugin: http://www.scala-sbt.org/release/docs/Getting-Started/Using-Plugins
