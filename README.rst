@@ -35,17 +35,23 @@ Secondly, you need to add *snmp4s-core* as a dependency in your project build fi
 Configuration
 -------------
 
-Any MIBs that are built in as part of **SNMP4S** can be declared in your project build file (see the org.snmp4s.gen.BuiltIn scaladocs/source for an exhaustive list of available MIBs)::
+Any MIBs that are built in as part of **SNMP4S** can be declared in your project build file (see the ``org.snmp4s.gen.BuiltIn`` scaladocs/source for an exhaustive list of available MIBs)::
 
   import org.snmp4s.gen.BuiltIn._
 
   snmp4sBuiltInMibs := Seq(IfMib, AdslLineMib)
 
-Custom MIBs are simply placed in the src/main/mibs directory of your project.  All files in the directory will be treated as a MIB regardless of filename::
+Custom MIBs are simply placed in the ``src/main/mibs`` directory of your project.  All files in the directory will be treated as a MIB regardless of filename::
 
   ~/code/snmp4s/example/src/main/mibs $ ls -1
   AGENTPP-GLOBAL-REG.txt
   AGENTPP-SIMULATION-MIB.txt
+
+Finally, you can specify the package prefix for all of the generated MIB objects, shown here with the default value::
+
+  snmp4sMibPackage := "org.snmp4s.mib"
+
+Each MIB file will produce a Scala file in package <snmp4sMibPackage>.<CamelCasedMibName>.  For instance, the IF-MIB with the default ``snmp4sMibPackage`` value will create the package ``org.snmp4s.mib.IfMib``.  A case class is generated for every leaf OID in the MIB.  Also, enumeration classes are generated for OIDs with an enumerated integer syntax.
 
 Code Examples That Work
 ---------------
