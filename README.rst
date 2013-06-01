@@ -76,8 +76,7 @@ This can be done today.  See the *example* directory for a working project which
 
   // Import the compiled MIBs you want to work with
   import IfMib._
-  import AgentppSimulationMib._
-
+  
   // Get the value assigned to ifDescr.1
   snmp.get(IfDescr(1)) match {
     case Left(err) => // Something bad happened
@@ -128,7 +127,8 @@ As important as code that works, is code that doesn't.  These mistakes will not 
 
   // Cannot set a Read-only OID
   snmp.set(IfDescr(1) to "description")
-  // inferred type arguments [org.snmp4s.ReadOnly,String] do not conform to method set's type parameter bounds [A <: org.snmp4s.Writable,T]
+  // inferred type arguments [org.snmp4s.ReadOnly,String] do not conform to method set's type 
+  // parameter bounds [A <: org.snmp4s.Writable,T]
   // [error]         snmp.set(IfDescr(1) to "description")
   // [error]              ^
 
@@ -150,7 +150,7 @@ As important as code that works, is code that doesn't.  These mistakes will not 
 
 Environment
 -----------
-Other than the usual need for git, sbt, and jdk, sbt will need root access to run the test suites for the snmp4s-core project.  The integration tests use SNMP4J-Agent which needs to bind to port 161.  
+Other than the usual need for git, sbt, and jdk, sbt will need root access to run the test suites for the *snmp4s-core* project.  The integration tests use SNMP4J-Agent which needs to bind to port 161.  
 
 Contributions
 -------------
