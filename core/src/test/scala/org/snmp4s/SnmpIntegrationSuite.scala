@@ -147,8 +147,57 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     }
     
     "Get multiple OIDs of different types" in {
-      val res:Either[SnmpError,(Int, String)] = get(IfIndex(1), IfAlias(1))
-      res should equal (Right((1, "My eth")))
+      val res = get(
+        IfIndex(1),
+        IfDescr(1),
+        IfType(1),
+        IfMtu(1),
+        IfSpeed(1),
+        IfPhysAddress(1),
+        IfAdminStatus(1),
+        IfOperStatus(1),
+        IfName(1),
+        IfInMulticastPkts(1),
+        IfAlias(1),
+        
+        IfIndex(2),
+        IfDescr(2),
+        IfType(2),
+        IfMtu(2),
+        IfSpeed(2),
+        IfPhysAddress(2),
+        IfAdminStatus(2),
+        IfOperStatus(2),
+        IfName(2),
+        IfInMulticastPkts(2),
+        IfAlias(2)
+      )
+      
+      res should equal (Right((
+        1,
+        "eth0",
+        IfType_enum.EthernetCsmacd,
+        1500,
+        100000000,
+        "00:00:00:00:01",
+        IfAdminStatus_enum.Up,
+        IfOperStatus_enum.Up,
+        "Ethernet-0",
+        1,
+        "My eth",
+        
+        2,
+        "loopback",
+        IfType_enum.SoftwareLoopback,
+        1500,
+        10000000,
+        "00:00:00:00:02",
+        IfAdminStatus_enum.Up,
+        IfOperStatus_enum.Up,
+        "Loopback",
+        21,
+        "My loop"
+      )))
     }
   }
 }

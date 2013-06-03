@@ -18,6 +18,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 )
 
+Boilerplate.settings
+
 osgiSettings
 
 OsgiKeys.exportPackage := Seq(
