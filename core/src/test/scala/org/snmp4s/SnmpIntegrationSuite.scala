@@ -115,6 +115,10 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       get(MyReadOnlyOid(1)) should equal (Left(NoSuchName))
       set(MyReadWriteOid(2) to 42) should equal (Some(NoSuchName))
       walk(MyReadOnlyOid) should equal(Right(Seq()))
+
+      // Gotta figure out a better way to handle errors so we know which OID is at fault.
+      get(IfAdminStatus(1), MyReadOnlyOid(1), IfAdminStatus(2), IfAdminStatus(3)) should equal (Left(NoSuchName))
+      get(IfAdminStatus(3)) should equal (Left(NoSuchName))
       
       val unresolvedName = new SnmpSync(SnmpParams("invalid"))
       unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))
