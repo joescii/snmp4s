@@ -33,7 +33,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   import IfMib._
   import AgentppSimulationMib._
   
-  "An Snmp" should {
+  "A synchronous Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
       import AgentppSimMode_enum._
       get(AgentppSimMode(0)) should equal (Right(Oper))
@@ -126,6 +126,29 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       walk(IfAdminStatus) should equal (Left(AgentUnreachable))
       get(IfAdminStatus(1)) should equal (Left(AgentUnreachable))
       set(IfAdminStatus(2) to Testing) should equal (Some(AgentUnreachable))
+    }
+    
+    "Get multiple OIDs of the same type" in {
+      get(Seq(
+        IfIndex(1),
+        IfIndex(2),
+        IfInMulticastPkts(1),
+        IfInMulticastPkts(2),
+        IfInBroadcastPkts(1),
+        IfInBroadcastPkts(2)
+      )) should equal (Right(Seq(
+        1,
+        2,
+        1,
+        21,
+        2,
+        22
+      )))
+    }
+    
+    "Get multiple OIDs of different types" in {
+      val res:Either[SnmpError,(Int, String)] = get(IfIndex(1), IfAlias(1))
+      res should equal (Right((1, "My eth")))
     }
   }
 }

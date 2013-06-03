@@ -105,11 +105,56 @@ class Snmp(params:SnmpParams) {
   implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
-  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[SnmpError,T] = {
+  def get[A1 <: Readable, T1]
+    (obj1:DataObject[A1, T1])
+    (implicit m1:Manifest[T1]):
+    Either[SnmpError,T1] = 
+  {
+    def pack = { pdu: PDU =>
+      pdu.add(new VariableBinding(obj1.oid))
+      pdu
+    }
+    def unpack = { vs:Seq[Variable] => (
+      cast(obj1, vs(0), m1)
+    )}
+    
+    doGet(pack, unpack)
+  }
+  
+  def get[A1 <: Readable, T1, A2 <: Readable, T2]
+    (obj1:DataObject[A1, T1], obj2:DataObject[A2, T2])
+    (implicit m1:Manifest[T1], m2:Manifest[T2]):
+    Either[SnmpError,(T1, T2)] = 
+  {
+    def pack = { pdu: PDU =>
+      pdu.add(new VariableBinding(obj1.oid))
+      pdu.add(new VariableBinding(obj2.oid))
+      pdu
+    }
+    def unpack = { vs:Seq[Variable] => (
+      cast(obj1, vs(0), m1), 
+      cast(obj2, vs(1), m2)
+    )}
+    
+    doGet(pack, unpack)
+  }
+  
+  def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[T]] = {
+    def pack = { pdu:PDU =>
+      objs.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
+    }
+    def unpack = { vs:Seq[Variable] =>
+      val zip = objs.zip(vs)
+      zip map { case (obj, v) => cast(obj, v, m) }
+    } 
+    doGet(pack, unpack)
+  }
+  
+  private def doGet[T](pack:(PDU => PDU), unpack:(Seq[Variable]) => T):Either[SnmpError, T] = {
     try {
       val pdu = new PDU
-      pdu.add(new VariableBinding(obj.oid))
       pdu.setType(PDU.GET)
+      pack(pdu)
 
       val event = snmp.get(pdu, target(read))
       val res = Option(event.getResponse)
@@ -121,9 +166,7 @@ class Snmp(params:SnmpParams) {
           val v = vb.getVariable
           Left(ErrorMap(res.getErrorStatus))
         } else {
-          val vb = res.get(0)
-          val v = vb.getVariable
-          Right(cast(obj, v))
+          Right(unpack(res.getVariableBindings().map(_ getVariable)))
         }
         case None => {
           Left(AgentUnreachable)
@@ -133,7 +176,7 @@ class Snmp(params:SnmpParams) {
       case e:NullPointerException => Left(AgentUnknown)
     }
   }
-
+  
   def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[SnmpError] = {    
     toVariable(set.obj, set.v) match {
       case Some(v) => {
@@ -178,7 +221,7 @@ class Snmp(params:SnmpParams) {
           val o: Oid = vb.getOid()
           val v = vb.getVariable
           
-          VarBind(obj(o.last), cast(obj, v))
+          VarBind(obj(o.last), cast(obj, v, m))
         }
 
         Right(vbs)
@@ -207,7 +250,7 @@ class Snmp(params:SnmpParams) {
   }
   
   // TODO: Handle other types
-  private def cast[A <: Readable, T](obj:MibObject[A], v:Variable)(implicit m:Manifest[T]):T = {
+  private def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):T = {
     val c = m.runtimeClass
     val r = if (c == classOf[Int]) 
       v.toInt()
