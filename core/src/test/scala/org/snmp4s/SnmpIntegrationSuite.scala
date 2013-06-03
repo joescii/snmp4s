@@ -15,7 +15,7 @@ import org.scalatest.matchers.{ShouldMatchers}
 import Mib._
 
 class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
-  val snmp = new Snmp(SnmpParams())
+  val snmp = new SnmpSync(SnmpParams())
   
   var ta:Option[TestAgent] = None
   
@@ -116,7 +116,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       set(MyReadWriteOid(2) to 42) should equal (Some(NoSuchName))
       walk(MyReadOnlyOid) should equal(Right(Seq()))
       
-      val unresolvedName = new Snmp(SnmpParams("invalid"))
+      val unresolvedName = new SnmpSync(SnmpParams("invalid"))
       unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))
       unresolvedName.get(IfAdminStatus(1)) should equal (Left(AgentUnknown))
       unresolvedName.set(IfAdminStatus(2) to Testing) should equal (Some(AgentUnknown))

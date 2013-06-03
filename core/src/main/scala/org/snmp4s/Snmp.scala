@@ -96,48 +96,14 @@ case class SnmpParams(
 /**
   * Create one of these to do SNMP.
   */
-class Snmp(params:SnmpParams) {
+abstract class SnmpSyncGuts(params:SnmpParams) {
   import params._;
   private val map  = new DefaultUdpTransportMapping
   private val snmp = new Snmp4j(map)
   map.listen()
     
-  implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
-  implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
-  
-  def get[A1 <: Readable, T1]
-    (obj1:DataObject[A1, T1])
-    (implicit m1:Manifest[T1]):
-    Either[SnmpError,T1] = 
-  {
-    def pack = { pdu: PDU =>
-      pdu.add(new VariableBinding(obj1.oid))
-      pdu
-    }
-    def unpack = { vs:Seq[Variable] => (
-      cast(obj1, vs(0), m1)
-    )}
-    
-    doGet(pack, unpack)
-  }
-  
-  def get[A1 <: Readable, T1, A2 <: Readable, T2]
-    (obj1:DataObject[A1, T1], obj2:DataObject[A2, T2])
-    (implicit m1:Manifest[T1], m2:Manifest[T2]):
-    Either[SnmpError,(T1, T2)] = 
-  {
-    def pack = { pdu: PDU =>
-      pdu.add(new VariableBinding(obj1.oid))
-      pdu.add(new VariableBinding(obj2.oid))
-      pdu
-    }
-    def unpack = { vs:Seq[Variable] => (
-      cast(obj1, vs(0), m1), 
-      cast(obj2, vs(1), m2)
-    )}
-    
-    doGet(pack, unpack)
-  }
+  protected implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
+  protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
   def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[T]] = {
     def pack = { pdu:PDU =>
@@ -150,7 +116,7 @@ class Snmp(params:SnmpParams) {
     doGet(pack, unpack)
   }
   
-  private def doGet[T](pack:(PDU => PDU), unpack:(Seq[Variable]) => T):Either[SnmpError, T] = {
+  protected def doGet[T](pack:(PDU => PDU), unpack:(Seq[Variable]) => T):Either[SnmpError, T] = {
     try {
       val pdu = new PDU
       pdu.setType(PDU.GET)
@@ -250,7 +216,7 @@ class Snmp(params:SnmpParams) {
   }
   
   // TODO: Handle other types
-  private def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):T = {
+  protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):T = {
     val c = m.runtimeClass
     val r = if (c == classOf[Int]) 
       v.toInt()
@@ -262,5 +228,42 @@ class Snmp(params:SnmpParams) {
       1
     
     r.asInstanceOf[T]
+  }
+}
+
+// To be generated up by sbt-boilerplate
+class SnmpSync(params:SnmpParams) extends SnmpSyncGuts(params) {
+    def get[A1 <: Readable, T1]
+    (obj1:DataObject[A1, T1])
+    (implicit m1:Manifest[T1]):
+    Either[SnmpError,T1] = 
+  {
+    def pack = { pdu: PDU =>
+      pdu.add(new VariableBinding(obj1.oid))
+      pdu
+    }
+    def unpack = { vs:Seq[Variable] => (
+      cast(obj1, vs(0), m1)
+    )}
+    
+    doGet(pack, unpack)
+  }
+  
+  def get[A1 <: Readable, T1, A2 <: Readable, T2]
+    (obj1:DataObject[A1, T1], obj2:DataObject[A2, T2])
+    (implicit m1:Manifest[T1], m2:Manifest[T2]):
+    Either[SnmpError,(T1, T2)] = 
+  {
+    def pack = { pdu: PDU =>
+      pdu.add(new VariableBinding(obj1.oid))
+      pdu.add(new VariableBinding(obj2.oid))
+      pdu
+    }
+    def unpack = { vs:Seq[Variable] => (
+      cast(obj1, vs(0), m1), 
+      cast(obj2, vs(1), m2)
+    )}
+    
+    doGet(pack, unpack)
   }
 }
