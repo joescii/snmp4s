@@ -204,6 +204,18 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )))
     }
     
+    "Set multiple OIDs of the same type" in {
+      import IfAdminStatus_enum._
+      set(Seq(
+        IfAdminStatus(1) to Testing,
+        IfAdminStatus(2) to Down
+      )) should equal (None)
+      
+      get(IfAdminStatus(1), IfAdminStatus(2)) should equal (Right((
+        Testing, Down
+      )))
+    }
+    
     "Set multiple OIDs of different types" in {
       import IfAdminStatus_enum._
       set(

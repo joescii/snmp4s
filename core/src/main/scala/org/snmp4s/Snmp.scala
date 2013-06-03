@@ -146,14 +146,14 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     }
   }
   
-//  def set[A1 <: Writable, T1](vb1:VarBind[A1, T1])(implicit m1:Manifest[T1]):Option[SnmpError] = {
-//    def pack = { pdu:PDU =>
-//      pdu.add(new VariableBinding(vb1.obj.oid, toVariable(vb1.obj, vb1.v)))
-//      pdu
-//    }
-//    
-//    doSet(pack)
-//  }
+  def set[A <: Writable, T](vbs:Seq[VarBind[A, T]])(implicit m:Manifest[T]):Option[SnmpError] = {
+    def pack = { pdu:PDU =>
+      vbs map { vb => pdu.add(new VariableBinding(vb.obj.oid, toVariable(vb.obj, vb.v))) }
+      pdu
+    }
+    
+    doSet(pack)
+  }
   
   protected def doSet(pack:(PDU => PDU)):Option[SnmpError] = {
     try {
