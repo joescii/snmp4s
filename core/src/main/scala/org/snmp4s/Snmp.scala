@@ -146,33 +146,35 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     }
   }
   
-  def set[A <: Writable, T](set:VarBind[A, T])(implicit m:Manifest[T]):Option[SnmpError] = {    
-    toVariable(set.obj, set.v) match {
-      case Some(v) => {
-        try {
-          val pdu = new PDU
-          val vb = new VariableBinding(set.obj.oid)
-          vb.setVariable(v)
-          pdu.add(vb)
-          pdu.setType(PDU.SET)
+//  def set[A1 <: Writable, T1](vb1:VarBind[A1, T1])(implicit m1:Manifest[T1]):Option[SnmpError] = {
+//    def pack = { pdu:PDU =>
+//      pdu.add(new VariableBinding(vb1.obj.oid, toVariable(vb1.obj, vb1.v)))
+//      pdu
+//    }
+//    
+//    doSet(pack)
+//  }
+  
+  protected def doSet(pack:(PDU => PDU)):Option[SnmpError] = {
+    try {
+      val pdu = new PDU
+      pdu.setType(PDU.SET)
+      pack(pdu)
 
-          val event = snmp.set(pdu, target(write))
-          val res = Option(event.getResponse)
+      val event = snmp.set(pdu, target(write))
+      val res = Option(event.getResponse)
 
-          res match {
-            case Some(res) => if (res.getErrorStatus > 0) {
-              val i = res.getErrorIndex()
-              val vb = res.get(i - 1)
-              val v = vb.getVariable
-              Some(ErrorMap(res.getErrorStatus))
-            } else None
-            case None => Some(AgentUnreachable)
-          }
-        } catch {
-          case e: NullPointerException => Some(AgentUnknown)
-        }
+      res match {
+        case Some(res) => if (res.getErrorStatus > 0) {
+          val i = res.getErrorIndex()
+          val vb = res.get(i - 1)
+          val v = vb.getVariable
+          Some(ErrorMap(res.getErrorStatus))
+        } else None
+        case None => Some(AgentUnreachable)
       }
-      case _ => Some(UnsupportedSyntax)
+    } catch {
+      case e: NullPointerException => Some(AgentUnknown)
     }
   }
   
@@ -203,12 +205,12 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     }
   }
   
-  private def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Option[Variable] = { 
+  protected def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Variable = { 
     val c = m.runtimeClass
-    if(c == classOf[Int]) Some(new Integer32(v.asInstanceOf[Int]))
-    else if(c == classOf[String]) Some(new OctetString(v.asInstanceOf[String]))
-    else if(obj.enum.isDefined) Some(new Integer32(fromEnum(v)))
-    else None
+    if(c == classOf[Int]) new Integer32(v.asInstanceOf[Int])
+    else if(c == classOf[String]) new OctetString(v.asInstanceOf[String])
+    else if(obj.enum.isDefined) new Integer32(fromEnum(v))
+    else new org.snmp4j.smi.Null
   }
   
   private def fromEnum[T](v:T):Int = {

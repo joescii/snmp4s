@@ -203,5 +203,19 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
         "My loop"
       )))
     }
+    
+    "Set multiple OIDs of different types" in {
+      import IfAdminStatus_enum._
+      set(
+        IfAlias(1) to "Alias1",
+        IfAlias(2) to "Alias2",
+        IfAdminStatus(1) to Testing,
+        IfAdminStatus(2) to Down
+      ) should equal (None)
+      
+      get(IfAlias(1), IfAlias(2), IfAdminStatus(1), IfAdminStatus(2)) should equal (Right((
+        "Alias1", "Alias2", Testing, Down
+      )))
+    }
   }
 }
