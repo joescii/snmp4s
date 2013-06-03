@@ -94,9 +94,9 @@ case class SnmpParams(
 }
 
 /**
-  * Create one of these to do SNMP.
+  * Contains the guts of doing the work via SNMP4J
   */
-abstract class SnmpSyncGuts(params:SnmpParams) {
+protected abstract class SnmpSyncGuts(params:SnmpParams) {
   import params._;
   private val map  = new DefaultUdpTransportMapping
   private val snmp = new Snmp4j(map)
@@ -105,6 +105,9 @@ abstract class SnmpSyncGuts(params:SnmpParams) {
   protected implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
+  /**
+   * Perform an SNMP get against a list of homogenously-typed OIDs
+   */
   def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[T]] = {
     def pack = { pdu:PDU =>
       objs.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
