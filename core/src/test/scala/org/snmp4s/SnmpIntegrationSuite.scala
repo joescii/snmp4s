@@ -36,25 +36,27 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
   "A synchronous Snmp" should {
     "be able to read value 1 from agentppSimMode on our simulator" in {
       import AgentppSimMode_enum._
-      get(AgentppSimMode(0)) should equal (Right(Oper))
+      
+      // Double Right sucks... Will fix soon.
+      get(AgentppSimMode(0)) should equal (Right(Right(Oper)))
     }
     
     "be able to set value 2 on Read-Write OID agentppSimMode, read it back, and set it back to 1 on our simulator" in {
       import AgentppSimMode_enum._
-      get(AgentppSimMode) should equal (Right(Oper))
+      get(AgentppSimMode) should equal (Right(Right(Oper)))
       set(AgentppSimMode to Config) should equal (None)
-      get(AgentppSimMode) should equal (Right(Config))
+      get(AgentppSimMode) should equal (Right(Right(Config)))
       set(AgentppSimMode to Oper) should equal (None)
-      get(AgentppSimMode) should equal (Right(Oper))
+      get(AgentppSimMode) should equal (Right(Right(Oper)))
     }
     
     "be able to get Read-Only OID ifIndex.1" in {
-      get(IfIndex(1)) should equal (Right(1))
+      get(IfIndex(1)) should equal (Right(Right(1)))
     }
     
     "be able to get String syntax OID ifDescr" in {
-      get(IfDescr(1)) should equal (Right("eth0"))
-      get(IfDescr(2)) should equal (Right("loopback"))
+      get(IfDescr(1)) should equal (Right(Right("eth0")))
+      get(IfDescr(2)) should equal (Right(Right("loopback")))
     }
     
     "be able to walk on Read-Only OID ifIndex" in {
@@ -75,11 +77,11 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     "be able to get/set an enumerated value" in {
       import IfAdminStatus_enum._
       
-      get(IfAdminStatus(1)) should equal (Right(Up))
+      get(IfAdminStatus(1)) should equal (Right(Right(Up)))
       set(IfAdminStatus(1) to Down) should equal (None)
-      get(IfAdminStatus(1)) should equal (Right(Down))
+      get(IfAdminStatus(1)) should equal (Right(Right(Down)))
       set(IfAdminStatus(1) to Up) should equal (None)
-      get(IfAdminStatus(1)) should equal (Right(Up))
+      get(IfAdminStatus(1)) should equal (Right(Right(Up)))
     }
     
     "be able to walk on String syntax OID ifDescr" in {
@@ -90,9 +92,9 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     }
     
     "be able to set String syntax Read-Write OID ifAlias" in {
-      get(IfAlias(1)) should equal (Right("My eth"))
+      get(IfAlias(1)) should equal (Right(Right("My eth")))
       set(IfAlias(1) to "Your eth") should equal (None)
-      get(IfAlias(1)) should equal (Right("Your eth"))
+      get(IfAlias(1)) should equal (Right(Right("Your eth")))
     }
     
     "be able to pattern match against an OID" in {
@@ -112,13 +114,16 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     
     "handle errors" in {
       import IfAdminStatus_enum._
-      get(MyReadOnlyOid(1)) should equal (Left(NoSuchName))
+      get(MyReadOnlyOid(1)) should equal (Right(Left(NoSuchName)))
       set(MyReadWriteOid(2) to 42) should equal (Some(NoSuchName))
       walk(MyReadOnlyOid) should equal(Right(Seq()))
 
-      // Gotta figure out a better way to handle errors so we know which OID is at fault.
-      get(IfAdminStatus(1), MyReadOnlyOid(1), IfAdminStatus(2), IfAdminStatus(3)) should equal (Left(NoSuchName))
-      get(IfAdminStatus(3)) should equal (Left(NoSuchName))
+      // The WrongValue is the best we can do with SNMP4J. Even though there are 2 OIDs which have
+      // errored, SNMP4J only reports 1.
+      get(IfAdminStatus(1), MyReadOnlyOid(1), IfAdminStatus(2), IfAdminStatus(3)) should equal (
+        Right(Right(Up), Left(NoSuchName), Right(Up), Left(WrongValue))
+      )
+      get(IfAdminStatus(3)) should equal (Right(Left(NoSuchName)))
       
       val unresolvedName = new SnmpSync(SnmpParams("invalid"))
       unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))
@@ -141,12 +146,12 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
         IfInBroadcastPkts(1),
         IfInBroadcastPkts(2)
       )) should equal (Right(Seq(
-        1,
-        2,
-        1,
-        21,
-        2,
-        22
+        Right(1),
+        Right(2),
+        Right(1),
+        Right(21),
+        Right(2),
+        Right(22)
       )))
     }
     
@@ -178,29 +183,29 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )
       
       res should equal (Right((
-        1,
-        "eth0",
-        IfType_enum.EthernetCsmacd,
-        1500,
-        100000000,
-        "00:00:00:00:01",
-        IfAdminStatus_enum.Up,
-        IfOperStatus_enum.Up,
-        "Ethernet-0",
-        1,
-        "My eth",
+        Right(1),
+        Right("eth0"),
+        Right(IfType_enum.EthernetCsmacd),
+        Right(1500),
+        Right(100000000),
+        Right("00:00:00:00:01"),
+        Right(IfAdminStatus_enum.Up),
+        Right(IfOperStatus_enum.Up),
+        Right("Ethernet-0"),
+        Right(1),
+        Right("My eth"),
         
-        2,
-        "loopback",
-        IfType_enum.SoftwareLoopback,
-        1500,
-        10000000,
-        "00:00:00:00:02",
-        IfAdminStatus_enum.Up,
-        IfOperStatus_enum.Up,
-        "Loopback",
-        21,
-        "My loop"
+        Right(2),
+        Right("loopback"),
+        Right(IfType_enum.SoftwareLoopback),
+        Right(1500),
+        Right(10000000),
+        Right("00:00:00:00:02"),
+        Right(IfAdminStatus_enum.Up),
+        Right(IfOperStatus_enum.Up),
+        Right("Loopback"),
+        Right(21),
+        Right("My loop")
       )))
     }
     
@@ -212,7 +217,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )) should equal (None)
       
       get(IfAdminStatus(1), IfAdminStatus(2)) should equal (Right((
-        Testing, Down
+        Right(Testing), Right(Down)
       )))
     }
     
@@ -226,7 +231,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       ) should equal (None)
       
       get(IfAlias(1), IfAlias(2), IfAdminStatus(1), IfAdminStatus(2)) should equal (Right((
-        "Alias1", "Alias2", Testing, Down
+        Right("Alias1"), Right("Alias2"), Right(Testing), Right(Down)
       )))
     }
   }

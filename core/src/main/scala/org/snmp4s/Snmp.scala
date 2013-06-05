@@ -108,18 +108,21 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   /**
    * Perform an SNMP get against a list of homogenously-typed OIDs
    */
-  def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[T]] = {
+  def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[Either[SnmpError,T]]] = {
     def pack = { pdu:PDU =>
       objs.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
     }
-    def unpack = { vs:Seq[Variable] =>
+    def unpack:(Seq[Either[SnmpError,Variable]] => Seq[Either[SnmpError,T]]) = { vs =>
       val zip = objs.zip(vs)
-      zip map { case (obj, v) => cast(obj, v, m) }
+      zip map { 
+        case (obj, Left(e))  => Left(e)
+        case (obj, Right(v)) => cast(obj, v, m) 
+      }
     } 
     doGet(pack, unpack)
   }
   
-  protected def doGet[T](pack:(PDU => PDU), unpack:(Seq[Variable]) => T):Either[SnmpError, T] = {
+  protected def doGet[R](pack:(PDU => PDU), unpack:(Seq[Either[SnmpError,Variable]]) => R):Either[SnmpError, R] = {
     try {
       val pdu = new PDU
       pdu.setType(PDU.GET)
@@ -129,13 +132,20 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
       val res = Option(event.getResponse)
 
       res match {
-        case Some(res) => if (res.getErrorStatus > 0) {
-          val i = res.getErrorIndex()
-          val vb = res.get(i - 1)
-          val v = vb.getVariable
-          Left(ErrorMap(res.getErrorStatus))
-        } else {
-          Right(unpack(res.getVariableBindings().map(_ getVariable)))
+        case Some(res) => {
+          val vars = res.getVariableBindings().map(vb => vb getVariable)
+          val err = if (res.getErrorStatus > 0)
+            Some((ErrorMap(res.getErrorStatus)), res.getErrorIndex())
+          else
+            None
+            
+          val combined = Stream.from(1).zip(vars) map { case (index, v) =>
+            err match {
+              case Some((e, i)) => if(index == i) Left(e) else Right(v)
+              case _ => Right(v)
+            }
+          }
+          Right(unpack(combined))
         }
         case None => {
           Left(AgentUnreachable)
@@ -192,7 +202,8 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
           val o: Oid = vb.getOid()
           val v = vb.getVariable
           
-          VarBind(obj(o.last), cast(obj, v, m))
+          // Fix this patch right.get:
+          VarBind(obj(o.last), cast(obj, v, m).right.get)
         }
 
         Right(vbs)
@@ -220,18 +231,26 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     r.asInstanceOf[Int]
   }
   
-  // TODO: Handle other types
-  protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):T = {
-    val c = m.runtimeClass
-    val r = if (c == classOf[Int]) 
-      v.toInt()
-    else if(c == classOf[String])
-      v.toString()
-    else if(obj.enum isDefined)
-      obj.enum.get(v.toInt)
-    else
-      1
-    
-    r.asInstanceOf[T]
+  protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):Either[SnmpError, T] = {
+    try {
+      val c = m.runtimeClass
+      
+      val r = if (c == classOf[Int])
+        Right(v.toInt())
+      else if (c == classOf[String])
+        Right(v.toString())
+      else if (obj.enum isDefined)
+        Right(obj.enum.get(v.toInt))
+      else
+        Left(WrongValue)
+
+      r match {
+        case Left(e)  => Left(e)
+        case Right(v) => Right(v.asInstanceOf[T])
+      }
+    } catch {
+      // This wrong value case happens when there are more than one errored variables in a get response.
+      case e: Exception => Left(WrongValue)
+    }
   }
 }
