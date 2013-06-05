@@ -108,23 +108,25 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   /**
     * Perform get against a single OID.
     */
-  def get[A1 <: Readable, T1]
-    (obj1:DataObject[A1, T1])
-    (implicit m1:Manifest[T1]):
-    Either[SnmpError,T1] = 
+  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[SnmpError,T] = 
   {
     def pack = { pdu: PDU =>
-      pdu.add(new VariableBinding(obj1.oid))
+      pdu.add(new VariableBinding(obj.oid))
       pdu
     }
     def unpack = { vs:Seq[Either[SnmpError,Variable]] => (
       vs(0) match { 
-        // Figure out how to handle Lefts
-        case Right(v) => cast(obj1, v, m1).right.get
+        case Left(e)  => Left(e)
+        case Right(v) => cast(obj, v, m)
       }
     )}
     
-    doGet(pack, unpack)
+    val res = doGet(pack, unpack)
+    
+    res match {
+      case Left(e)  => Left(e)
+      case Right(r) => r
+    }
   }
   
   /**
