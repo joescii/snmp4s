@@ -37,26 +37,25 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     "be able to read value 1 from agentppSimMode on our simulator" in {
       import AgentppSimMode_enum._
       
-      // Double Right sucks... Will fix soon.
-      get(AgentppSimMode(0)) should equal (Right(Right(Oper)))
+      get(AgentppSimMode(0)) should equal (Right(Oper))
     }
     
     "be able to set value 2 on Read-Write OID agentppSimMode, read it back, and set it back to 1 on our simulator" in {
       import AgentppSimMode_enum._
-      get(AgentppSimMode) should equal (Right(Right(Oper)))
+      get(AgentppSimMode) should equal (Right(Oper))
       set(AgentppSimMode to Config) should equal (None)
-      get(AgentppSimMode) should equal (Right(Right(Config)))
+      get(AgentppSimMode) should equal (Right(Config))
       set(AgentppSimMode to Oper) should equal (None)
-      get(AgentppSimMode) should equal (Right(Right(Oper)))
+      get(AgentppSimMode) should equal (Right(Oper))
     }
     
     "be able to get Read-Only OID ifIndex.1" in {
-      get(IfIndex(1)) should equal (Right(Right(1)))
+      get(IfIndex(1)) should equal (Right(1))
     }
     
     "be able to get String syntax OID ifDescr" in {
-      get(IfDescr(1)) should equal (Right(Right("eth0")))
-      get(IfDescr(2)) should equal (Right(Right("loopback")))
+      get(IfDescr(1)) should equal (Right("eth0"))
+      get(IfDescr(2)) should equal (Right("loopback"))
     }
     
     "be able to walk on Read-Only OID ifIndex" in {
@@ -77,11 +76,11 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     "be able to get/set an enumerated value" in {
       import IfAdminStatus_enum._
       
-      get(IfAdminStatus(1)) should equal (Right(Right(Up)))
+      get(IfAdminStatus(1)) should equal (Right(Up))
       set(IfAdminStatus(1) to Down) should equal (None)
-      get(IfAdminStatus(1)) should equal (Right(Right(Down)))
+      get(IfAdminStatus(1)) should equal (Right(Down))
       set(IfAdminStatus(1) to Up) should equal (None)
-      get(IfAdminStatus(1)) should equal (Right(Right(Up)))
+      get(IfAdminStatus(1)) should equal (Right(Up))
     }
     
     "be able to walk on String syntax OID ifDescr" in {
@@ -92,9 +91,9 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     }
     
     "be able to set String syntax Read-Write OID ifAlias" in {
-      get(IfAlias(1)) should equal (Right(Right("My eth")))
+      get(IfAlias(1)) should equal (Right("My eth"))
       set(IfAlias(1) to "Your eth") should equal (None)
-      get(IfAlias(1)) should equal (Right(Right("Your eth")))
+      get(IfAlias(1)) should equal (Right("Your eth"))
     }
     
     "be able to pattern match against an OID" in {
@@ -114,7 +113,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
     
     "handle errors" in {
       import IfAdminStatus_enum._
-      get(MyReadOnlyOid(1)) should equal (Right(Left(NoSuchName)))
+      get(MyReadOnlyOid(1)) should equal (Left(NoSuchName))
       set(MyReadWriteOid(2) to 42) should equal (Some(NoSuchName))
       walk(MyReadOnlyOid) should equal(Right(Seq()))
 
@@ -123,7 +122,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       get(IfAdminStatus(1), MyReadOnlyOid(1), IfAdminStatus(2), IfAdminStatus(3)) should equal (
         Right(Right(Up), Left(NoSuchName), Right(Up), Left(WrongValue))
       )
-      get(IfAdminStatus(3)) should equal (Right(Left(NoSuchName)))
+      get(IfAdminStatus(3)) should equal (Left(NoSuchName))
       
       val unresolvedName = new SnmpSync(SnmpParams("invalid"))
       unresolvedName.walk(IfAdminStatus) should equal (Left(AgentUnknown))

@@ -106,8 +106,30 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
   /**
-   * Perform an SNMP get against a list of homogenously-typed OIDs
-   */
+    * Perform get against a single OID.
+    */
+  def get[A1 <: Readable, T1]
+    (obj1:DataObject[A1, T1])
+    (implicit m1:Manifest[T1]):
+    Either[SnmpError,T1] = 
+  {
+    def pack = { pdu: PDU =>
+      pdu.add(new VariableBinding(obj1.oid))
+      pdu
+    }
+    def unpack = { vs:Seq[Either[SnmpError,Variable]] => (
+      vs(0) match { 
+        // Figure out how to handle Lefts
+        case Right(v) => cast(obj1, v, m1).right.get
+      }
+    )}
+    
+    doGet(pack, unpack)
+  }
+  
+  /**
+    * Perform an SNMP get against a list of homogenously-typed OIDs
+    */
   def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[Either[SnmpError,T]]] = {
     def pack = { pdu:PDU =>
       objs.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
