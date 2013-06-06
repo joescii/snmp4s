@@ -208,6 +208,14 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )))
     }
     
+    "Get multiple OIDs of different types in a tuple" in {
+      get((IfIndex(1), IfDescr(1), IfType(1))) should equal (Right((
+        Right(1),
+        Right("eth0"),
+        Right(IfType_enum.EthernetCsmacd)
+      )))
+    }
+    
     "Set multiple OIDs of the same type" in {
       import IfAdminStatus_enum._
       set(Seq(
