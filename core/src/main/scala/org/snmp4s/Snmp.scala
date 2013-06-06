@@ -180,6 +180,9 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     }
   }
   
+  /**
+    * Perform an SNMP set against a list of homogenously-typed OID varbinds.
+    */
   def set[A <: Writable, T](vbs:Seq[VarBind[A, T]])(implicit m:Manifest[T]):Option[SnmpError] = {
     def pack = { pdu:PDU =>
       vbs map { vb => pdu.add(new VariableBinding(vb.obj.oid, toVariable(vb.obj, vb.v))) }
@@ -212,6 +215,9 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     }
   }
   
+  /**
+    * Perform an SNMP walk against a readable OID
+    */
   def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[SnmpError,Seq[VarBind[A, T]]] = {
     try {
       val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
