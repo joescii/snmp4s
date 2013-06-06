@@ -152,6 +152,19 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
         Right(2),
         Right(22)
       )))
+
+      // TODO: Make this work
+//      get(Seq(
+//        IfDescr(1),
+//        IfAlias(1),
+//        IfDescr(2),
+//        IfAlias(2)
+//      )) should equal (Right(Seq(
+//        Right("eth0"),
+//        Right("My eth"),
+//        Right("loopback"),
+//        Right("My loop")
+//      )))
     }
     
     "Get multiple OIDs of different types" in {
@@ -208,11 +221,15 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       )))
     }
     
-    "Get multiple OIDs of different types in a tuple" in {
-      get((IfIndex(1), IfDescr(1), IfType(1))) should equal (Right((
-        Right(1),
+    "Slap an index on a list of like-typed OIDs and get them" in {
+      get(Seq(IfDescr, IfPhysAddress, IfName), 1, 2) should equal (Right(Seq(
         Right("eth0"),
-        Right(IfType_enum.EthernetCsmacd)
+        Right("00:00:00:00:01"),
+        Right("Ethernet-0"),
+        
+        Right("loopback"),
+        Right("00:00:00:00:02"),
+        Right("Loopback")
       )))
     }
     

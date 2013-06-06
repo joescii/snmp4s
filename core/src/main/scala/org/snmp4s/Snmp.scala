@@ -146,6 +146,28 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
     doGet(pack, unpack)
   }
   
+  /**
+    * Perform an SNMP get against a list of homogenously-typed OIDs
+    */
+  def get[A <: Readable, T](objs:Seq[AccessibleObject[A, T]], indices:Oid*)(implicit m:Manifest[T]):Either[SnmpError,Seq[Either[SnmpError,T]]] = {
+    val withIndices = for {
+      i <- indices
+      o <- objs
+    } yield { o(i) }
+    
+    def pack = { pdu: PDU =>
+      withIndices.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
+    }
+    def unpack:(Seq[Either[SnmpError,Variable]] => Seq[Either[SnmpError,T]]) = { vs =>
+      val zip = withIndices.zip(vs)
+      zip map { 
+        case (obj, Left(e))  => Left(e)
+        case (obj, Right(v)) => cast(obj, v, m) 
+      }
+    } 
+    doGet(pack, unpack)
+  }
+  
   protected def doGet[R](pack:(PDU => PDU), unpack:(Seq[Either[SnmpError,Variable]]) => R):Either[SnmpError, R] = {
     try {
       val pdu = new PDU

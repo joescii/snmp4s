@@ -27,29 +27,6 @@ class SnmpSync(params:SnmpParams) extends SnmpSyncGuts(params) {
 #
 ]
 
-[2#  def get[[#A1 <: Readable, T1#]]
-    (objs:([#DataObject[A1, T1]#]))
-    (implicit [#m1:Manifest[T1]#]):
-    Either[SnmpError,([#Either[SnmpError,T1]#])] = 
-  {
-    def pack = { pdu: PDU =>
-[#      pdu.add(new VariableBinding(objs._1.oid))#
-]
-      pdu
-    }
-    def unpack = { vs:Seq[Either[SnmpError,Variable]] => (
-      [#vs(0) match { 
-        case Left(e)  => Left(e)
-        case Right(v) => cast(objs._1, v, m1)
-      }#,
-]
-    )}
-    
-    doGet(pack, unpack)
-  }
-#
-]
-
 [#  def set[[#A1 <: Writable, T1#]]
     ([#vb1:VarBind[A1, T1]#])
     (implicit [#m1:Manifest[T1]#]):
