@@ -38,6 +38,8 @@ object Mib {
     * Implicit conversion that allows us to drop the default index (0) from scalars.
     */
   implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A, T]):DataObject[A, T] = s(0)
+  
+  implicit def DataObject2GetRequest[A <: Readable, T](obj:DataObject[A, T]):GetRequest[T] = SingleGetRequest(obj)
 }
 
 import Mib._
@@ -175,3 +177,9 @@ case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T) {
     */
   val tuple = (obj, v)
 }
+
+sealed trait GetRequest[T] {
+  def &[A <: Readable, U]:(DataObject[A, U] => GetRequest[(U, T)]) = obj => CompoundGetRequest(obj, this)
+}
+protected case class SingleGetRequest[A <: Readable, T](val obj:DataObject[A, T]) extends GetRequest[T]
+protected case class CompoundGetRequest[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]

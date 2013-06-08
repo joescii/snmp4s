@@ -105,6 +105,13 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   protected implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
+  def unroll[T](req:GetRequest[T]):Seq[Oid] = {
+    req match {
+      case SingleGetRequest(obj) => Seq(obj.oid)
+      case CompoundGetRequest(obj, next) => unroll(next) :+ (obj.oid)
+    }
+  }
+  
   /**
     * Perform get against a single OID.
     */
