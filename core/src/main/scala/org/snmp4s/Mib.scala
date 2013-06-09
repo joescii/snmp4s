@@ -40,6 +40,8 @@ object Mib {
   implicit def Scalar2DataObject[A <: MaxAccess, T](s:Scalar[A, T]):DataObject[A, T] = s(0)
   
   implicit def DataObject2GetRequest[A <: Readable, T](obj:DataObject[A, T]):GetRequest[T] = SingleGetRequest(obj)
+  
+  implicit def ValueToGetResponse[T](res:Either[SnmpError, T]):GetResponse[T] = SingleGetResponse(res)
 }
 
 import Mib._
@@ -192,6 +194,8 @@ sealed trait GetRequest[T] {
 protected case class SingleGetRequest[A <: Readable, T](val obj:DataObject[A, T]) extends GetRequest[T]
 case class &:[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
 
-sealed trait GetResponse[T] 
+sealed trait GetResponse[T] {
+  def |:[U](res:Either[SnmpError,U]): GetResponse[(U, T)] = org.snmp4s.|:(res, this)
+}
 protected case class SingleGetResponse[T](val res:Either[SnmpError,T]) extends GetResponse[T]
-protected case class CompoundGetResponse[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]
+case class |:[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]

@@ -260,13 +260,15 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
 //    }
     
     "do a get against GetRequest" in {
+      import scala.util. {Right => V, Left => E}
       val get1:Either[SnmpError,GetResponse[Int]] = get(IfIndex(1)) 
-      get1 should equal (Right(SingleGetResponse(Right(1))))
+      get1 should equal (V(SingleGetResponse(V(1))))
       val get3 = get(IfIndex(1) &: IfIndex(2) &: IfAlias(1))
-      get3 should equal (Right(
-          CompoundGetResponse(Right(1), 
-          CompoundGetResponse(Right(2), 
-          SingleGetResponse(Right("My eth"))))))
+      val v = V("My eth")
+      get3 match {
+        case V(V(1) |: V(2) |: v) => 
+        case _ => fail("did not return correct values")
+      } 
     }
   }
 }

@@ -127,7 +127,7 @@ class SnmpSync(params:SnmpParams) {
           })
         }
         case obj &: next => { res => 
-          CompoundGetResponse(res.last match {
+          |:(res.last match {
             case Left(e)  => Left(e)
             case Right(v) => cast(obj, v, m)
           }, unpack(next).apply(res.init))
