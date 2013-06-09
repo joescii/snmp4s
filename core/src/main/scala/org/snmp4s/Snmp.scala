@@ -112,7 +112,7 @@ class SnmpSync(params:SnmpParams) {
           pdu.add(new VariableBinding(obj.oid))
           pdu
         }
-        case obj & next => { pdu: PDU =>
+        case obj &: next => { pdu: PDU =>
           pack(next)(pdu).add(new VariableBinding(obj.oid))
           pdu
         } 
@@ -126,7 +126,7 @@ class SnmpSync(params:SnmpParams) {
             case Right(v) => cast(obj, v, m)
           })
         }
-        case obj & next => { res => 
+        case obj &: next => { res => 
           CompoundGetResponse(res.last match {
             case Left(e)  => Left(e)
             case Right(v) => cast(obj, v, m)
