@@ -17,6 +17,6 @@ snmp4sBuiltInMibs := Seq(IfMib, AdslLineMib)
 snmp4sMibPackage := "org.snmp4s.example.mib"
 
 libraryDependencies ++= Seq(
-  "org.snmp4s" %% "snmp4s-core" % "0.1.0"
+  "org.snmp4s" %% "snmp4s-core" % "0.2.0-SNAPSHOT"
 )
 

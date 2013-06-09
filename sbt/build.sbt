@@ -4,14 +4,14 @@ name := "snmp4s-sbt"
 
 organization := "org.snmp4s"
 
-version := "0.1.0"
+version := "0.2.0-SNAPSHOT"
 
 scalaVersion := "2.9.2"
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= Seq(
-  "org.snmp4s" %% "snmp4s-gen" % "0.1.0"
+  "org.snmp4s" %% "snmp4s-gen" % "0.2.0-SNAPSHOT"
 )
 
 publishMavenStyle := true

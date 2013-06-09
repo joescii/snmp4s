@@ -94,9 +94,9 @@ case class SnmpParams(
 }
 
 /**
-  * Contains the guts of doing the work via SNMP4J
+  * Performs the SNMP work synchronously
   */
-protected abstract class SnmpSyncGuts(params:SnmpParams) {
+class SnmpSync(params:SnmpParams) {
   import params._;
   private val map  = new DefaultUdpTransportMapping
   private val snmp = new Snmp4j(map)
@@ -105,74 +105,37 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   protected implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
-  def unroll[T](req:GetRequest[T]):Seq[Oid] = {
-    req match {
-      case SingleGetRequest(obj) => Seq(obj.oid)
-      case CompoundGetRequest(obj, next) => unroll(next) :+ (obj.oid)
-    }
-  }
-  
-  /**
-    * Perform get against a single OID.
-    */
-  def get[A <: Readable, T](obj:DataObject[A, T])(implicit m:Manifest[T]):Either[SnmpError,T] = 
-  {
-    def pack = { pdu: PDU =>
-      pdu.add(new VariableBinding(obj.oid))
-      pdu
-    }
-    def unpack = { vs:Seq[Either[SnmpError,Variable]] => (
-      vs(0) match { 
-        case Left(e)  => Left(e)
-        case Right(v) => cast(obj, v, m)
+  def get[T](req:GetRequest[T])(implicit m:Manifest[T]) = {
+    def pack[U](req:GetRequest[U]):(PDU => PDU) =
+      req match {
+        case SingleGetRequest(obj) => { pdu: PDU =>
+          pdu.add(new VariableBinding(obj.oid))
+          pdu
+        }
+        case obj & next => { pdu: PDU =>
+          pack(next)(pdu).add(new VariableBinding(obj.oid))
+          pdu
+        } 
       }
-    )}
-    
-    val res = doGet(pack, unpack)
-    
-    res match {
-      case Left(e)  => Left(e)
-      case Right(r) => r
-    }
-  }
-  
-  /**
-    * Perform an SNMP get against a list of homogenously-typed OIDs
-    */
-  def get[A <: Readable, T](objs:Seq[DataObject[A, T]])(implicit m:Manifest[T]):Either[SnmpError,Seq[Either[SnmpError,T]]] = {
-    def pack = { pdu:PDU =>
-      objs.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
-    }
-    def unpack:(Seq[Either[SnmpError,Variable]] => Seq[Either[SnmpError,T]]) = { vs =>
-      val zip = objs.zip(vs)
-      zip map { 
-        case (obj, Left(e))  => Left(e)
-        case (obj, Right(v)) => cast(obj, v, m) 
+    def unpack[U](req:GetRequest[U])(implicit m:Manifest[U]):
+      (Seq[Either[SnmpError,Variable]] => GetResponse[U]) = { 
+      req match {
+        case SingleGetRequest(obj) => { res =>
+          SingleGetResponse(res.last match {
+            case Left(e)  => Left(e)
+            case Right(v) => cast(obj, v, m)
+          })
+        }
+        case obj & next => { res => 
+          CompoundGetResponse(res.last match {
+            case Left(e)  => Left(e)
+            case Right(v) => cast(obj, v, m)
+          }, unpack(next).apply(res.init))
+        }
       }
-    } 
-    doGet(pack, unpack)
-  }
-  
-  /**
-    * Perform an SNMP get against a list of homogenously-typed OIDs
-    */
-  def get[A <: Readable, T](objs:Seq[AccessibleObject[A, T]], indices:Oid*)(implicit m:Manifest[T]):Either[SnmpError,Seq[Either[SnmpError,T]]] = {
-    val withIndices = for {
-      i <- indices
-      o <- objs
-    } yield { o(i) }
-    
-    def pack = { pdu: PDU =>
-      withIndices.foldLeft(pdu) { case (pdu, obj) => pdu.add(new VariableBinding(obj.oid)); pdu }
     }
-    def unpack:(Seq[Either[SnmpError,Variable]] => Seq[Either[SnmpError,T]]) = { vs =>
-      val zip = withIndices.zip(vs)
-      zip map { 
-        case (obj, Left(e))  => Left(e)
-        case (obj, Right(v)) => cast(obj, v, m) 
-      }
-    } 
-    doGet(pack, unpack)
+    
+    doGet(pack(req), unpack(req))
   }
   
   protected def doGet[R](pack:(PDU => PDU), unpack:(Seq[Either[SnmpError,Variable]]) => R):Either[SnmpError, R] = {
@@ -292,11 +255,9 @@ protected abstract class SnmpSyncGuts(params:SnmpParams) {
   
   protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):Either[SnmpError, T] = {
     try {
-      val c = m.runtimeClass
-      
-      val r = if (c == classOf[Int])
+      val r = if (IntegerSyntax == obj.syntax)
         Right(v.toInt())
-      else if (c == classOf[String])
+      else if (OctetStringSyntax == obj.syntax)
         Right(v.toString())
       else if (obj.enum isDefined)
         Right(obj.enum.get(v.toInt))

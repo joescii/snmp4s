@@ -10,6 +10,6 @@
 package org.snmp4s
 
 object TestMibs {
-  case object MyReadOnlyOid extends AccessibleObject[ReadOnly,Int](Seq(1,2,3,4,1), "myReadOnlyOid") with Scalar[ReadOnly, Int] 
-  case object MyReadWriteOid extends AccessibleObject[ReadWrite, Int](Seq(1,2,3,4,2), "myReadWriteOid") with Scalar[ReadWrite, Int] 
+  case object MyReadOnlyOid extends AccessibleObject[ReadOnly,Int](Seq(1,2,3,4,1), "myReadOnlyOid", IntegerSyntax) with Scalar[ReadOnly, Int] 
+  case object MyReadWriteOid extends AccessibleObject[ReadWrite, Int](Seq(1,2,3,4,2), "myReadWriteOid", IntegerSyntax) with Scalar[ReadWrite, Int] 
 }

@@ -9,7 +9,7 @@ import AgentppSimMode_enum._
 import Console.{println => p}
 
 object Example extends App {
-  val snmp = new Snmp(SnmpParams())
+  val snmp = new SnmpSync(SnmpParams())
 
   snmp.get(AgentppSimMode) match {
     case Left(err)   => p("Get failed. "+err)

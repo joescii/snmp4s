@@ -52,6 +52,13 @@ case object Version1  extends Version { override def enum = SnmpConstants.versio
 case object Version2c extends Version { override def enum = SnmpConstants.version2c }
 case object Version3  extends Version { override def enum = SnmpConstants.version3 }
 
+sealed trait Syntax
+case object IntegerSyntax extends Syntax
+case object OctetStringSyntax extends Syntax
+case object ObjectIdentifierSyntax extends Syntax
+case object BitsSyntax extends Syntax
+case object ChoiceSyntax extends Syntax
+
 trait EnumInteger extends Enumeration
 
 /**
@@ -61,6 +68,7 @@ trait MibObject[A <: MaxAccess] extends Equals {
   val oid:Oid
   val name:String
   val enum:Option[EnumInteger]
+  val syntax:Syntax
 
   def canEqual(other: Any) = {
     other.isInstanceOf[MibObject[A]]
@@ -145,10 +153,10 @@ trait ReadCreate extends MaxAccess with Readable with Writable
 /**
   * A MIB object with MAX-ACCESS "Read-only"
   */
-abstract class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) 
+abstract class AccessibleObject[A <: MaxAccess, T] (val oid:Oid, val name:String, val syntax:Syntax, val enum:Option[EnumInteger] = None) 
   extends (Oid => DataObject[A, T]) with MibObject[A] {
-  def apply(index:Oid) = DataObjectInst[A, T](oid ++ index, name+"."+(index.mkString(".")), enum) 
-  def unapply(obj:DataObjectInst[A, T]):Option[Oid] = Some(obj.oid.last)
+  def apply(index:Oid) = DataObjectInst[A, T](oid ++ index, name+"."+(index.mkString(".")), syntax, enum) 
+  def unapply(obj:DataObjectInst[A, T]):Option[Oid] = Some(obj.oid.last) // <-- TODO: Do this right
 }
 
 /**
@@ -165,7 +173,7 @@ trait Scalar[A <: MaxAccess, T] extends AccessibleObject[A, T]
 /**
   * Instantiation of the <code>DataObject</code> trait that should suffice for most cases.
   */
-case class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String, val enum:Option[EnumInteger] = None) extends DataObject[A, T]
+case class DataObjectInst[A <: MaxAccess, T](val oid:Oid, val name:String, val syntax:Syntax, val enum:Option[EnumInteger] = None) extends DataObject[A, T]
 
 /**
   * Wrapper of a <code>MibObject</code> and it's respective value for
@@ -178,8 +186,10 @@ case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T) {
   val tuple = (obj, v)
 }
 
-sealed trait GetRequest[T] {
-  def &[A <: Readable, U]:(DataObject[A, U] => GetRequest[(U, T)]) = obj => CompoundGetRequest(obj, this)
-}
+sealed trait GetRequest[T]
 protected case class SingleGetRequest[A <: Readable, T](val obj:DataObject[A, T]) extends GetRequest[T]
-protected case class CompoundGetRequest[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
+case class &[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
+
+sealed trait GetResponse[T] 
+protected case class SingleGetResponse[T](val res:Either[SnmpError,T]) extends GetResponse[T]
+protected case class CompoundGetResponse[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]

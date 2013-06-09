@@ -67,17 +67,4 @@ class SnmpUnitSuite extends WordSpec with ShouldMatchers {
       t should equal(vb.tuple)
     }
   }
-  
-  "A GetRequest" should {
-    "do it's thing" in {
-      val req1:GetRequest[Int] = IfIndex(1)
-      val req2 = IfIndex(1) & IfAlias(2)
-      val req4 = IfIndex(1) & IfAlias(1) & IfIndex(2) & IfAlias(2)
-
-      val snmp = new SnmpSync(SnmpParams())
-      snmp.unroll(req1) should equal (Seq(IfIndex(1).oid))
-      snmp.unroll(req2) should equal (Seq(IfIndex(1).oid, IfAlias(2).oid))
-      snmp.unroll(req4) should equal (Seq(IfIndex(1).oid, IfAlias(1).oid, IfIndex(2).oid, IfAlias(2).oid))
-    }
-  }
 }

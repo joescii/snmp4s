@@ -79,9 +79,10 @@ class Gen(pkg:String) {
       val snmp = oid.getType.asInstanceOf[SnmpObjectType]
       val access = accessMap.get(snmp.getAccess()).get
       val octets = oid.getValue.toString.replace(".", ",")
+      val syntaxTrait = syntaxTraitMap.get(snmp.getSyntax.getName).get
       val (scalaType, enumArg, typeCode) = syntax(objName, snmp.getSyntax)
       
-      val code = typeCode + "case object "+objName+" extends AccessibleObject["+access+", "+scalaType+"](Seq("+octets+"), \""+name+"\""+enumArg+")"
+      val code = typeCode + "case object "+objName+" extends AccessibleObject["+access+", "+scalaType+"](Seq("+octets+"), \""+name+"\", "+syntaxTrait+enumArg+")"
       if(oid.isScalar) code + " with Scalar["+access+", "+scalaType+"]"
       else code
     } else {
@@ -119,7 +120,7 @@ class Gen(pkg:String) {
     (scalaType, enumArg, typeCode)
   }
   
-  private def syntaxGeneral(syntax:MibType):(String,String,String) = (syntaxMap.get(syntax.getName).get, "", "")
+  private def syntaxGeneral(syntax:MibType):(String,String,String) = (syntaxScalaMap.get(syntax.getName).get, "", "")
   
   private val accessMap = Map(
     SnmpAccess.READ_WRITE -> "ReadWrite",
@@ -130,11 +131,19 @@ class Gen(pkg:String) {
     SnmpAccess.WRITE_ONLY -> "WriteOnly"
   )
   
-  private val syntaxMap = Map(
+  private val syntaxScalaMap = Map(
     "INTEGER" -> "Int",
     "OCTET STRING" -> "String",
     "OBJECT IDENTIFIER" -> "Int",
     "BITS" -> "Int",
     "CHOICE" -> "String"
+  )
+
+  private val syntaxTraitMap = Map(
+    "INTEGER" -> "IntegerSyntax",
+    "OCTET STRING" -> "OctetStringSyntax",
+    "OBJECT IDENTIFIER" -> "ObjectIdentifierSyntax",
+    "BITS" -> "BitsSyntax",
+    "CHOICE" -> "ChoiceSyntax"
   )
 }

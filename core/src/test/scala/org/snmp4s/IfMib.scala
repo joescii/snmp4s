@@ -1,19 +1,10 @@
-/*
- * Copyright 2013 org.snmp4s
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance 
- * with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the License is 
- * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and limitations under the License.
- */
-
 package org.snmp4s
 package IfMib
 
-case object IfNumber extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,1), "ifNumber") with Scalar[ReadOnly, Int]
-case object IfTableLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,5), "ifTableLastChange") with Scalar[ReadOnly, Int]
-case object IfIndex extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex")
-case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr")
+case object IfNumber extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,1), "ifNumber", IntegerSyntax) with Scalar[ReadOnly, Int]
+case object IfTableLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,5), "ifTableLastChange", IntegerSyntax) with Scalar[ReadOnly, Int]
+case object IfIndex extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,1), "ifIndex", IntegerSyntax)
+case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr", OctetStringSyntax)
 object IfType_enum extends EnumInteger {
   type IfType = Value
   val Other = Value(1, "other")
@@ -261,17 +252,17 @@ object IfType_enum extends EnumInteger {
   val WwanPP = Value(243, "wwanPP")
   val WwanPP2 = Value(244, "wwanPP2")
 }
-case object IfType extends AccessibleObject[ReadOnly, IfType_enum.Value](Seq(1,3,6,1,2,1,2,2,1,3), "ifType", Some(IfType_enum))
-case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu")
-case object IfSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,5), "ifSpeed")
-case object IfPhysAddress extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,6), "ifPhysAddress")
+case object IfType extends AccessibleObject[ReadOnly, IfType_enum.Value](Seq(1,3,6,1,2,1,2,2,1,3), "ifType", IntegerSyntax, Some(IfType_enum))
+case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu", IntegerSyntax)
+case object IfSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,5), "ifSpeed", IntegerSyntax)
+case object IfPhysAddress extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,6), "ifPhysAddress", OctetStringSyntax)
 object IfAdminStatus_enum extends EnumInteger {
   type IfAdminStatus = Value
   val Up = Value(1, "up")
   val Down = Value(2, "down")
   val Testing = Value(3, "testing")
 }
-case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus", Some(IfAdminStatus_enum))
+case object IfAdminStatus extends AccessibleObject[ReadWrite, IfAdminStatus_enum.Value](Seq(1,3,6,1,2,1,2,2,1,7), "ifAdminStatus", IntegerSyntax, Some(IfAdminStatus_enum))
 object IfOperStatus_enum extends EnumInteger {
   type IfOperStatus = Value
   val Up = Value(1, "up")
@@ -282,57 +273,57 @@ object IfOperStatus_enum extends EnumInteger {
   val NotPresent = Value(6, "notPresent")
   val LowerLayerDown = Value(7, "lowerLayerDown")
 }
-case object IfOperStatus extends AccessibleObject[ReadOnly, IfOperStatus_enum.Value](Seq(1,3,6,1,2,1,2,2,1,8), "ifOperStatus", Some(IfOperStatus_enum))
-case object IfLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,9), "ifLastChange")
-case object IfInOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,10), "ifInOctets")
-case object IfInUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,11), "ifInUcastPkts")
-case object IfInNUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,12), "ifInNUcastPkts")
-case object IfInDiscards extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,13), "ifInDiscards")
-case object IfInErrors extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,14), "ifInErrors")
-case object IfInUnknownProtos extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,15), "ifInUnknownProtos")
-case object IfOutOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,16), "ifOutOctets")
-case object IfOutUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,17), "ifOutUcastPkts")
-case object IfOutNUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,18), "ifOutNUcastPkts")
-case object IfOutDiscards extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,19), "ifOutDiscards")
-case object IfOutErrors extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,20), "ifOutErrors")
-case object IfOutQLen extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,21), "ifOutQLen")
-case object IfSpecific extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,22), "ifSpecific")
-case object IfName extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,31,1,1,1,1), "ifName")
-case object IfInMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,2), "ifInMulticastPkts")
-case object IfInBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,3), "ifInBroadcastPkts")
-case object IfOutMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,4), "ifOutMulticastPkts")
-case object IfOutBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,5), "ifOutBroadcastPkts")
-case object IfHCInOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,6), "ifHCInOctets")
-case object IfHCInUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,7), "ifHCInUcastPkts")
-case object IfHCInMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,8), "ifHCInMulticastPkts")
-case object IfHCInBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,9), "ifHCInBroadcastPkts")
-case object IfHCOutOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,10), "ifHCOutOctets")
-case object IfHCOutUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,11), "ifHCOutUcastPkts")
-case object IfHCOutMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,12), "ifHCOutMulticastPkts")
-case object IfHCOutBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,13), "ifHCOutBroadcastPkts")
+case object IfOperStatus extends AccessibleObject[ReadOnly, IfOperStatus_enum.Value](Seq(1,3,6,1,2,1,2,2,1,8), "ifOperStatus", IntegerSyntax, Some(IfOperStatus_enum))
+case object IfLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,9), "ifLastChange", IntegerSyntax)
+case object IfInOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,10), "ifInOctets", IntegerSyntax)
+case object IfInUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,11), "ifInUcastPkts", IntegerSyntax)
+case object IfInNUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,12), "ifInNUcastPkts", IntegerSyntax)
+case object IfInDiscards extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,13), "ifInDiscards", IntegerSyntax)
+case object IfInErrors extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,14), "ifInErrors", IntegerSyntax)
+case object IfInUnknownProtos extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,15), "ifInUnknownProtos", IntegerSyntax)
+case object IfOutOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,16), "ifOutOctets", IntegerSyntax)
+case object IfOutUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,17), "ifOutUcastPkts", IntegerSyntax)
+case object IfOutNUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,18), "ifOutNUcastPkts", IntegerSyntax)
+case object IfOutDiscards extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,19), "ifOutDiscards", IntegerSyntax)
+case object IfOutErrors extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,20), "ifOutErrors", IntegerSyntax)
+case object IfOutQLen extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,21), "ifOutQLen", IntegerSyntax)
+case object IfSpecific extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,22), "ifSpecific", ObjectIdentifierSyntax)
+case object IfName extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,31,1,1,1,1), "ifName", OctetStringSyntax)
+case object IfInMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,2), "ifInMulticastPkts", IntegerSyntax)
+case object IfInBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,3), "ifInBroadcastPkts", IntegerSyntax)
+case object IfOutMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,4), "ifOutMulticastPkts", IntegerSyntax)
+case object IfOutBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,5), "ifOutBroadcastPkts", IntegerSyntax)
+case object IfHCInOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,6), "ifHCInOctets", IntegerSyntax)
+case object IfHCInUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,7), "ifHCInUcastPkts", IntegerSyntax)
+case object IfHCInMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,8), "ifHCInMulticastPkts", IntegerSyntax)
+case object IfHCInBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,9), "ifHCInBroadcastPkts", IntegerSyntax)
+case object IfHCOutOctets extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,10), "ifHCOutOctets", IntegerSyntax)
+case object IfHCOutUcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,11), "ifHCOutUcastPkts", IntegerSyntax)
+case object IfHCOutMulticastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,12), "ifHCOutMulticastPkts", IntegerSyntax)
+case object IfHCOutBroadcastPkts extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,13), "ifHCOutBroadcastPkts", IntegerSyntax)
 object IfLinkUpDownTrapEnable_enum extends EnumInteger {
   type IfLinkUpDownTrapEnable = Value
   val Enabled = Value(1, "enabled")
   val Disabled = Value(2, "disabled")
 }
-case object IfLinkUpDownTrapEnable extends AccessibleObject[ReadWrite, IfLinkUpDownTrapEnable_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,14), "ifLinkUpDownTrapEnable", Some(IfLinkUpDownTrapEnable_enum))
-case object IfHighSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,15), "ifHighSpeed")
+case object IfLinkUpDownTrapEnable extends AccessibleObject[ReadWrite, IfLinkUpDownTrapEnable_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,14), "ifLinkUpDownTrapEnable", IntegerSyntax, Some(IfLinkUpDownTrapEnable_enum))
+case object IfHighSpeed extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,15), "ifHighSpeed", IntegerSyntax)
 object IfPromiscuousMode_enum extends EnumInteger {
   type IfPromiscuousMode = Value
   val True = Value(1, "true")
   val False = Value(2, "false")
 }
-case object IfPromiscuousMode extends AccessibleObject[ReadWrite, IfPromiscuousMode_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,16), "ifPromiscuousMode", Some(IfPromiscuousMode_enum))
+case object IfPromiscuousMode extends AccessibleObject[ReadWrite, IfPromiscuousMode_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,16), "ifPromiscuousMode", IntegerSyntax, Some(IfPromiscuousMode_enum))
 object IfConnectorPresent_enum extends EnumInteger {
   type IfConnectorPresent = Value
   val True = Value(1, "true")
   val False = Value(2, "false")
 }
-case object IfConnectorPresent extends AccessibleObject[ReadOnly, IfConnectorPresent_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,17), "ifConnectorPresent", Some(IfConnectorPresent_enum))
-case object IfAlias extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,1,1,18), "ifAlias")
-case object IfCounterDiscontinuityTime extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,19), "ifCounterDiscontinuityTime")
-case object IfStackHigherLayer extends AccessibleObject[NotAccessible, Int](Seq(1,3,6,1,2,1,31,1,2,1,1), "ifStackHigherLayer")
-case object IfStackLowerLayer extends AccessibleObject[NotAccessible, Int](Seq(1,3,6,1,2,1,31,1,2,1,2), "ifStackLowerLayer")
+case object IfConnectorPresent extends AccessibleObject[ReadOnly, IfConnectorPresent_enum.Value](Seq(1,3,6,1,2,1,31,1,1,1,17), "ifConnectorPresent", IntegerSyntax, Some(IfConnectorPresent_enum))
+case object IfAlias extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,1,1,18), "ifAlias", OctetStringSyntax)
+case object IfCounterDiscontinuityTime extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,1,1,19), "ifCounterDiscontinuityTime", IntegerSyntax)
+case object IfStackHigherLayer extends AccessibleObject[NotAccessible, Int](Seq(1,3,6,1,2,1,31,1,2,1,1), "ifStackHigherLayer", IntegerSyntax)
+case object IfStackLowerLayer extends AccessibleObject[NotAccessible, Int](Seq(1,3,6,1,2,1,31,1,2,1,2), "ifStackLowerLayer", IntegerSyntax)
 object IfStackStatus_enum extends EnumInteger {
   type IfStackStatus = Value
   val Active = Value(1, "active")
@@ -342,9 +333,9 @@ object IfStackStatus_enum extends EnumInteger {
   val CreateAndWait = Value(5, "createAndWait")
   val Destroy = Value(6, "destroy")
 }
-case object IfStackStatus extends AccessibleObject[ReadCreate, IfStackStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,2,1,3), "ifStackStatus", Some(IfStackStatus_enum))
-case object IfStackLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,6), "ifStackLastChange") with Scalar[ReadOnly, Int]
-case object IfRcvAddressAddress extends AccessibleObject[NotAccessible, String](Seq(1,3,6,1,2,1,31,1,4,1,1), "ifRcvAddressAddress")
+case object IfStackStatus extends AccessibleObject[ReadCreate, IfStackStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,2,1,3), "ifStackStatus", IntegerSyntax, Some(IfStackStatus_enum))
+case object IfStackLastChange extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,6), "ifStackLastChange", IntegerSyntax) with Scalar[ReadOnly, Int]
+case object IfRcvAddressAddress extends AccessibleObject[NotAccessible, String](Seq(1,3,6,1,2,1,31,1,4,1,1), "ifRcvAddressAddress", OctetStringSyntax)
 object IfRcvAddressStatus_enum extends EnumInteger {
   type IfRcvAddressStatus = Value
   val Active = Value(1, "active")
@@ -354,14 +345,14 @@ object IfRcvAddressStatus_enum extends EnumInteger {
   val CreateAndWait = Value(5, "createAndWait")
   val Destroy = Value(6, "destroy")
 }
-case object IfRcvAddressStatus extends AccessibleObject[ReadCreate, IfRcvAddressStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,4,1,2), "ifRcvAddressStatus", Some(IfRcvAddressStatus_enum))
+case object IfRcvAddressStatus extends AccessibleObject[ReadCreate, IfRcvAddressStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,4,1,2), "ifRcvAddressStatus", IntegerSyntax, Some(IfRcvAddressStatus_enum))
 object IfRcvAddressType_enum extends EnumInteger {
   type IfRcvAddressType = Value
   val Other = Value(1, "other")
   val Volatile = Value(2, "volatile")
   val NonVolatile = Value(3, "nonVolatile")
 }
-case object IfRcvAddressType extends AccessibleObject[ReadCreate, IfRcvAddressType_enum.Value](Seq(1,3,6,1,2,1,31,1,4,1,3), "ifRcvAddressType", Some(IfRcvAddressType_enum))
+case object IfRcvAddressType extends AccessibleObject[ReadCreate, IfRcvAddressType_enum.Value](Seq(1,3,6,1,2,1,31,1,4,1,3), "ifRcvAddressType", IntegerSyntax, Some(IfRcvAddressType_enum))
 
 
 
@@ -375,14 +366,14 @@ case object IfRcvAddressType extends AccessibleObject[ReadCreate, IfRcvAddressTy
 
 
 
-case object IfTestId extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,31,1,3,1,1), "ifTestId")
+case object IfTestId extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,31,1,3,1,1), "ifTestId", IntegerSyntax)
 object IfTestStatus_enum extends EnumInteger {
   type IfTestStatus = Value
   val NotInUse = Value(1, "notInUse")
   val InUse = Value(2, "inUse")
 }
-case object IfTestStatus extends AccessibleObject[ReadWrite, IfTestStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,3,1,2), "ifTestStatus", Some(IfTestStatus_enum))
-case object IfTestType extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,31,1,3,1,3), "ifTestType")
+case object IfTestStatus extends AccessibleObject[ReadWrite, IfTestStatus_enum.Value](Seq(1,3,6,1,2,1,31,1,3,1,2), "ifTestStatus", IntegerSyntax, Some(IfTestStatus_enum))
+case object IfTestType extends AccessibleObject[ReadWrite, Int](Seq(1,3,6,1,2,1,31,1,3,1,3), "ifTestType", ObjectIdentifierSyntax)
 object IfTestResult_enum extends EnumInteger {
   type IfTestResult = Value
   val None = Value(1, "none")
@@ -393,9 +384,9 @@ object IfTestResult_enum extends EnumInteger {
   val Aborted = Value(6, "aborted")
   val Failed = Value(7, "failed")
 }
-case object IfTestResult extends AccessibleObject[ReadOnly, IfTestResult_enum.Value](Seq(1,3,6,1,2,1,31,1,3,1,4), "ifTestResult", Some(IfTestResult_enum))
-case object IfTestCode extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,3,1,5), "ifTestCode")
-case object IfTestOwner extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,3,1,6), "ifTestOwner")
+case object IfTestResult extends AccessibleObject[ReadOnly, IfTestResult_enum.Value](Seq(1,3,6,1,2,1,31,1,3,1,4), "ifTestResult", IntegerSyntax, Some(IfTestResult_enum))
+case object IfTestCode extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,31,1,3,1,5), "ifTestCode", ObjectIdentifierSyntax)
+case object IfTestOwner extends AccessibleObject[ReadWrite, String](Seq(1,3,6,1,2,1,31,1,3,1,6), "ifTestOwner", OctetStringSyntax)
 
 
 
