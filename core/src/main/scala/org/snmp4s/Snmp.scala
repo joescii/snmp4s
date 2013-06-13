@@ -113,24 +113,24 @@ class SnmpSync(params:SnmpParams) {
           pdu
         }
         case obj &: next => { pdu: PDU =>
-          pack(next)(pdu).add(new VariableBinding(obj.oid))
-          pdu
+          pdu.add(new VariableBinding(obj.oid))
+          pack(next)(pdu)
         } 
       }
     def unpack[U](req:GetRequest[U])(implicit m:Manifest[U]):
       (Seq[Either[SnmpError,Variable]] => GetResponse[U]) = { 
       req match {
         case SingleGetRequest(obj) => { res =>
-          SingleGetResponse(res.last match {
+          SingleGetResponse(res.head match {
             case Left(e)  => Left(e)
             case Right(v) => cast(obj, v, m)
           })
         }
         case obj &: next => { res => 
-          |:(res.last match {
+          |:(res.head match {
             case Left(e)  => Left(e)
             case Right(v) => cast(obj, v, m)
-          }, unpack(next).apply(res.init))
+          }, unpack(next).apply(res.tail))
         }
       }
     }
