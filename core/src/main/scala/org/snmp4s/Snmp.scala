@@ -173,15 +173,22 @@ class SnmpSync(params:SnmpParams) {
   }
   
   /**
-    * Perform an SNMP set against a list of homogenously-typed OID varbinds.
+    * Perform an SNMP set 
     */
-  def set[A <: Writable, T](vbs:Seq[VarBind[A, T]])(implicit m:Manifest[T]):Option[SnmpError] = {
-    def pack = { pdu:PDU =>
-      vbs map { vb => pdu.add(new VariableBinding(vb.obj.oid, toVariable(vb.obj, vb.v))) }
-      pdu
-    }
+  def set[T](req:SetRequest[T])(implicit m:Manifest[T]):Option[SnmpError] = {
+    def pack[U](req:SetRequest[U]):(PDU => PDU) = 
+      req match {
+        case SingleSetRequest(vb) => { pdu: PDU =>
+          pdu.add(new VariableBinding(vb.obj.oid, toVariable(vb.obj, vb.v)))
+          pdu
+        }
+        case CompoundSetRequest(vb, next) => { pdu: PDU =>
+          pdu.add(new VariableBinding(vb.obj.oid, toVariable(vb.obj, vb.v)))
+          pack(next)(pdu)
+        } 
+      }
     
-    doSet(pack)
+    doSet(pack(req))
   }
   
   protected def doSet(pack:(PDU => PDU)):Option[SnmpError] = {
@@ -238,10 +245,9 @@ class SnmpSync(params:SnmpParams) {
     }
   }
   
-  protected def toVariable[A <: Writable, T](obj:MibObject[A], v:T)(implicit m:Manifest[T]):Variable = { 
-    val c = m.runtimeClass
-    if(c == classOf[Int]) new Integer32(v.asInstanceOf[Int])
-    else if(c == classOf[String]) new OctetString(v.asInstanceOf[String])
+  protected def toVariable[A <: Writable, T](obj:MibObject[A], v:T):Variable = { 
+    if (IntegerSyntax == obj.syntax) new Integer32(v.asInstanceOf[Int])
+    else if (OctetStringSyntax == obj.syntax) new OctetString(v.asInstanceOf[String])
     else if(obj.enum.isDefined) new Integer32(fromEnum(v))
     else new org.snmp4j.smi.Null
   }

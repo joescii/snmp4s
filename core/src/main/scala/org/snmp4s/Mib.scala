@@ -42,6 +42,8 @@ object Mib {
   implicit def DataObject2GetRequest[A <: Readable, T](obj:DataObject[A, T]):GetRequest[T] = SingleGetRequest(obj)
   
   implicit def ValueToGetResponse[T](res:Either[SnmpError, T]):GetResponse[T] = SingleGetResponse(res)
+  
+  implicit def VarBind2SetRequest[A <: Writable, T](vb:VarBind[A, T]):SetRequest[T] = SingleSetRequest(vb)
 }
 
 import Mib._
@@ -192,10 +194,16 @@ sealed trait GetRequest[T] {
   def &:[A <: Readable, U](obj:DataObject[A, U]):GetRequest[(U, T)] = CompoundGetRequest(obj, this)
 }
 protected case class SingleGetRequest[A <: Readable, T](val obj:DataObject[A, T]) extends GetRequest[T]
-case class CompoundGetRequest[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
+case class CompoundGetRequest[A <: Readable, T, U](val head:DataObject[A, T], val t:GetRequest[U]) extends GetRequest[(T, U)]
 
 sealed trait GetResponse[T] {
   def &:[U](res:Either[SnmpError,U]): GetResponse[(U, T)] = org.snmp4s.&:(res, this)
 }
 protected case class SingleGetResponse[T](val res:Either[SnmpError,T]) extends GetResponse[T]
-case class &:[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]
+case class &:[T, U](val head:Either[SnmpError,T], val tail:GetResponse[U]) extends GetResponse[(T, U)]
+
+sealed trait SetRequest[T] {
+  def &:[A <: Writable, U](vb:VarBind[A, U]):SetRequest[(U, T)] = CompoundSetRequest(vb, this)
+}
+protected case class SingleSetRequest[A <: Writable, T](val vb:VarBind[A, T]) extends SetRequest[T]
+case class CompoundSetRequest[A <: Writable, T, U](val head:VarBind[A, T], val tail:SetRequest[U]) extends SetRequest[(T, U)]
