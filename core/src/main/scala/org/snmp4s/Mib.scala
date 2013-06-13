@@ -189,13 +189,13 @@ case class VarBind[A <: MaxAccess, T](val obj:DataObject[A, T], val v:T) {
 }
 
 sealed trait GetRequest[T] {
-  def &:[A <: Readable, U](obj:DataObject[A, U]):GetRequest[(U, T)] = org.snmp4s.&:(obj, this)
+  def &:[A <: Readable, U](obj:DataObject[A, U]):GetRequest[(U, T)] = CompoundGetRequest(obj, this)
 }
 protected case class SingleGetRequest[A <: Readable, T](val obj:DataObject[A, T]) extends GetRequest[T]
-case class &:[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
+case class CompoundGetRequest[A <: Readable, T, U](val obj:DataObject[A, T], val next:GetRequest[U]) extends GetRequest[(T, U)]
 
 sealed trait GetResponse[T] {
-  def |:[U](res:Either[SnmpError,U]): GetResponse[(U, T)] = org.snmp4s.|:(res, this)
+  def &:[U](res:Either[SnmpError,U]): GetResponse[(U, T)] = org.snmp4s.&:(res, this)
 }
 protected case class SingleGetResponse[T](val res:Either[SnmpError,T]) extends GetResponse[T]
-case class |:[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]
+case class &:[T, U](val res:Either[SnmpError,T], val next:GetResponse[U]) extends GetResponse[(T, U)]

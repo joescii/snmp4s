@@ -112,7 +112,7 @@ class SnmpSync(params:SnmpParams) {
           pdu.add(new VariableBinding(obj.oid))
           pdu
         }
-        case obj &: next => { pdu: PDU =>
+        case CompoundGetRequest(obj, next) => { pdu: PDU =>
           pdu.add(new VariableBinding(obj.oid))
           pack(next)(pdu)
         } 
@@ -126,11 +126,11 @@ class SnmpSync(params:SnmpParams) {
             case Right(v) => cast(obj, v, m)
           })
         }
-        case obj &: next => { res => 
-          |:(res.head match {
+        case CompoundGetRequest(obj, next) => { res => 
+          (res.head match {
             case Left(e)  => Left(e)
             case Right(v) => cast(obj, v, m)
-          }, unpack(next).apply(res.tail))
+          }) &: unpack(next).apply(res.tail)
         }
       }
     }

@@ -266,7 +266,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       val get3 = get(IfIndex(1) &: IfIndex(2) &: IfAlias(1))
       val v = V("My eth")
       get3 match {
-        case V(V(1) |: V(2) |: v) => 
+        case V(V(1) &: V(2) &: v) => 
         case _ => fail("did not return correct values")
       } 
     }
