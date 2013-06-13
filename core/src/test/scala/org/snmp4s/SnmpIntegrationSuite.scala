@@ -283,5 +283,20 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
         case _ =>
       }
     }
+    
+    "do a set with two VarBinds" in {
+      import IfAdminStatus_enum._;
+      set((IfAlias(1) to "Set Test2") &: (IfAdminStatus(1) to Testing)) match {
+        case Some(e) => fail("SNMP set failed")
+        case _ =>
+      }
+      
+      get(IfAlias(1) &: IfAdminStatus(1)) match {
+        case Right(Right(alias) &: status) =>
+          alias should equal ("Set Test2")
+          status should equal (SingleGetResponse(Right(Testing)))
+        case _ => fail("Could not retrieve values")
+      }
+    }
   }
 }

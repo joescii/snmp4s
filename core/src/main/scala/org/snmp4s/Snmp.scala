@@ -245,10 +245,10 @@ class SnmpSync(params:SnmpParams) {
     }
   }
   
-  protected def toVariable[A <: Writable, T](obj:MibObject[A], v:T):Variable = { 
-    if (IntegerSyntax == obj.syntax) new Integer32(v.asInstanceOf[Int])
+  protected def toVariable[A <: Writable, T](obj:MibObject[A], v:T):Variable = {
+    if(obj.enum.isDefined) new Integer32(fromEnum(v))
     else if (OctetStringSyntax == obj.syntax) new OctetString(v.asInstanceOf[String])
-    else if(obj.enum.isDefined) new Integer32(fromEnum(v))
+    else if (IntegerSyntax == obj.syntax) new Integer32(v.asInstanceOf[Int])
     else new org.snmp4j.smi.Null
   }
   
@@ -261,12 +261,12 @@ class SnmpSync(params:SnmpParams) {
   
   protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):Either[SnmpError, T] = {
     try {
-      val r = if (IntegerSyntax == obj.syntax)
-        Right(v.toInt())
+      val r = if (obj.enum isDefined)
+        Right(obj.enum.get(v.toInt))
       else if (OctetStringSyntax == obj.syntax)
         Right(v.toString())
-      else if (obj.enum isDefined)
-        Right(obj.enum.get(v.toInt))
+      else if (IntegerSyntax == obj.syntax)
+        Right(v.toInt())
       else
         Left(WrongValue)
 
