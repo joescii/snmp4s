@@ -41,6 +41,8 @@ object Mib {
   
   implicit def DataObject2GetRequest[A <: Readable, T](obj:DataObject[A, T]):GetRequest[T] = SingleGetRequest(obj)
   
+  // This is here for pattern matching with &:  Unfortunately, it doesn't work at the moment.  
+  // Should be fixed in Scala 2.11: https://github.com/scala/scala/commit/b92eb70113
   implicit def ValueToGetResponse[T](res:Either[SnmpError, T]):GetResponse[T] = SingleGetResponse(res)
   
   implicit def VarBind2SetRequest[A <: Writable, T](vb:VarBind[A, T]):SetRequest[T] = SingleSetRequest(vb)
