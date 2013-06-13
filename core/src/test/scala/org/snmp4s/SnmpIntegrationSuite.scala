@@ -258,15 +258,20 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
 //        Right("Alias1"), Right("Alias2"), Right(Testing), Right(Down)
 //      )))
 //    }
+    import scala.util. {Right => V, Left => E}
+    import org.snmp4s. {SingleGetResponse => S}
     
-    "do a get against GetRequest" in {
-      import scala.util. {Right => V, Left => E}
+    "do a get of an integer, octet string, and enum typed objects" in {
+      import IfOperStatus_enum._
       val get1:Either[SnmpError,GetResponse[Int]] = get(IfIndex(1)) 
       get1 should equal (V(SingleGetResponse(V(1))))
-      val get3 = get(IfIndex(1) &: IfIndex(2) &: IfAlias(1))
+      val get3 = get(IfIndex(1) &: IfAlias(1) &: IfOperStatus(1))
 
       get3 match {
-        case V(V(v1) &: V(v2) &: v3) => 
+        case V(V(v1) &: V(v2) &: S(V(v3))) => 
+          v1 should equal (1)
+          v2 should equal ("My eth")
+          v3 should equal (Up)
         case _ => fail("did not return correct values")
       } 
     }
@@ -279,22 +284,22 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       }
 
       get(IfAlias(1)) match {
-        case Right(v) => v should equal (SingleGetResponse(Right("Set Test")))
+        case V(S(V(v))) => v should equal ("Set Test")
         case _ =>
       }
     }
     
     "do a set with two VarBinds" in {
-      import IfAdminStatus_enum._;
+      import IfAdminStatus_enum._
       set((IfAlias(1) to "Set Test2") &: (IfAdminStatus(1) to Testing)) match {
         case Some(e) => fail("SNMP set failed")
         case _ =>
       }
       
       get(IfAlias(1) &: IfAdminStatus(1)) match {
-        case Right(Right(alias) &: status) =>
+        case V(V(alias) &: S(V(status))) =>
           alias should equal ("Set Test2")
-          status should equal (SingleGetResponse(Right(Testing)))
+          status should equal (Testing)
         case _ => fail("Could not retrieve values")
       }
     }
