@@ -105,7 +105,7 @@ class SnmpSync(params:SnmpParams) {
   protected implicit def Oid2Snmp4j(o:Oid):OID = new OID(o.toArray)
   protected implicit def Snmp4j2Oid(o:OID):Oid = o.getValue()
   
-  def get[T](req:GetRequest[T])(implicit m:Manifest[T]) = {
+  def get[T](req:GetRequest[T]) = {
     def pack[U](req:GetRequest[U]):(PDU => PDU) =
       req match {
         case SingleGetRequest(obj) => { pdu: PDU =>
@@ -117,19 +117,19 @@ class SnmpSync(params:SnmpParams) {
           pack(next)(pdu)
         } 
       }
-    def unpack[U](req:GetRequest[U])(implicit m:Manifest[U]):
+    def unpack[U](req:GetRequest[U]):
       (Seq[Either[SnmpError,Variable]] => GetResponse[U]) = { 
       req match {
         case SingleGetRequest(obj) => { res =>
           SingleGetResponse(res.head match {
             case Left(e)  => Left(e)
-            case Right(v) => cast(obj, v, m)
+            case Right(v) => cast(obj, v)
           })
         }
         case CompoundGetRequest(obj, next) => { res => 
           (res.head match {
             case Left(e)  => Left(e)
-            case Right(v) => cast(obj, v, m)
+            case Right(v) => cast(obj, v)
           }) &: unpack(next).apply(res.tail)
         }
       }
@@ -175,7 +175,7 @@ class SnmpSync(params:SnmpParams) {
   /**
     * Perform an SNMP set 
     */
-  def set[T](req:SetRequest[T])(implicit m:Manifest[T]):Option[SnmpError] = {
+  def set[T](req:SetRequest[T]):Option[SnmpError] = {
     def pack[U](req:SetRequest[U]):(PDU => PDU) = 
       req match {
         case SingleSetRequest(vb) => { pdu: PDU =>
@@ -217,7 +217,7 @@ class SnmpSync(params:SnmpParams) {
   /**
     * Perform an SNMP walk against a readable OID
     */
-  def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1)(implicit m:Manifest[T]):Either[SnmpError,Seq[VarBind[A, T]]] = {
+  def walk[A <: Readable, T](obj:AccessibleObject[A, T], ver:Version = Version1):Either[SnmpError,Seq[VarBind[A, T]]] = {
     try {
       val events = (new TreeUtils(snmp, new DefaultPDUFactory(PDU.GETNEXT))).walk(target(read), Array(obj.oid))
       
@@ -232,7 +232,7 @@ class SnmpSync(params:SnmpParams) {
           val v = vb.getVariable
           
           // Fix this patch right.get:
-          VarBind(obj(o.last), cast(obj, v, m).right.get)
+          VarBind(obj(o.last), cast(obj, v).right.get)
         }
 
         Right(vbs)
@@ -259,7 +259,7 @@ class SnmpSync(params:SnmpParams) {
     r.asInstanceOf[Int]
   }
   
-  protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable, m:Manifest[T]):Either[SnmpError, T] = {
+  protected def cast[A <: Readable, T](obj:MibObject[A], v:Variable):Either[SnmpError, T] = {
     try {
       val r = if (obj.enum isDefined)
         Right(obj.enum.get(v.toInt))
