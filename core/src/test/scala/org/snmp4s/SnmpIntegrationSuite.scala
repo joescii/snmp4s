@@ -276,6 +276,12 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       } 
     }
     
+    "do a get of a scalar" in {
+      import AgentppSimMode_enum._
+      
+      get(AgentppSimMode) should equal (V(S(V(Oper))))
+    }
+    
     "do a set with one VarBind" in {
       val set1:VarBind[ReadWrite,String] = IfAlias(1) to "Set Test"
       set(set1) match {
