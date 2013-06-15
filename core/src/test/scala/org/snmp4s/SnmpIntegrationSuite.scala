@@ -92,7 +92,7 @@ class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAf
       // The WrongValue is the best we can do with SNMP4J. Even though there are 2 OIDs which have
       // errored, SNMP4J only reports 1.
       get(IfAdminStatus(1) &: MyReadOnlyOid(1) &: IfAdminStatus(2) &: IfAdminStatus(3)) should equal (
-        Right(Right(Up) &: Left(NoSuchName) &: Right(Up) &: S(Left(WrongValue)))
+        Right(Right(Up) &: Left(NoSuchName) &: Right(Up) &: Left(WrongValue))
       )
       get(IfAdminStatus(3)) should equal (V(S(E(NoSuchName))))
       
