@@ -20,13 +20,17 @@ Installation
 ------------
 The latest release is **0.1.0**.  *snmp4s-core* is built against 2.10.1, but *snmp4s-gen* and *snmp4s-sbt* are built against 2.9.2 for use in SBT 0.12.x.
 
-First, you need to add *snmp4s-sbt* as an SBT `Plugin`_ in your project.  Although **SNMP4S** is available from Maven Central, our dependency on `Mibble`_ will require a resolver in addition to the plugin declaration::
+First, you need to add *snmp4s-sbt* as an SBT `Plugin`_ in your project.  Although **SNMP4S** is available from Maven Central, our dependency on `Mibble`_ will require a resolver in addition to the plugin declaration
+
+.. code:: scala
 
   resolvers += "Mibble" at "http://maven.cloudhopper.com/repos/third-party/"
 
   addSbtPlugin("org.snmp4s" % "snmp4s-sbt" % "0.1.0")
 
-Secondly, you need to add *snmp4s-core* as a dependency in your project build file.  Again, we require an additional resolver but this time for our dependency on `SNMP4J`_::
+Secondly, you need to add *snmp4s-core* as a dependency in your project build file.  Again, we require an additional resolver but this time for our dependency on `SNMP4J`_
+
+.. code:: scala
 
   resolvers += "OO SNMP" at "https://oosnmp.net/dist/release/"
 
@@ -35,13 +39,17 @@ Secondly, you need to add *snmp4s-core* as a dependency in your project build fi
 Configuration
 -------------
 
-Any MIBs that are built in as part of **SNMP4S** can be declared in your project build file (see the ``org.snmp4s.gen.BuiltIn`` scaladocs/source for an exhaustive list of available MIBs)::
+Any MIBs that are built in as part of **SNMP4S** can be declared in your project build file (see the ``org.snmp4s.gen.BuiltIn`` scaladocs/source for an exhaustive list of available MIBs)
+
+.. code:: scala
 
   import org.snmp4s.gen.BuiltIn._
 
   snmp4sBuiltInMibs := Seq(IfMib, AdslLineMib)
 
-Custom MIBs are simply placed in the ``src/main/mibs`` directory of your project.  All files in the directory will be treated as a MIB regardless of filename::
+Custom MIBs are simply placed in the ``src/main/mibs`` directory of your project.  All files in the directory will be treated as a MIB regardless of filename
+
+.. code:: scala
 
   ~/code/snmp4s/example/src/main/mibs $ ls -1
   AGENTPP-GLOBAL-REG.txt
@@ -55,7 +63,9 @@ Each MIB file will produce a Scala file in package <snmp4sMibPackage>.<CamelCase
 
 Code Examples That Work
 ---------------
-This can be done today.  See the *example* directory for a working project which utilizes **SNMP4S**::
+This can be done today.  See the *example* directory for a working project which utilizes **SNMP4S**
+
+.. code:: scala
 
   // Instantiate a new Snmp object, shown here with defaults for IP, port, community, etc.
   val snmp = new Snmp(SnmpParams(
@@ -121,7 +131,9 @@ This can be done today.  See the *example* directory for a working project which
 
 Code Examples That Don't Work
 -----------------------
-As important as code that works, is code that doesn't.  These mistakes will not compile::
+As important as code that works, is code that doesn't.  These mistakes will not compile
+
+.. code:: scala
 
   val snmp = new Snmp(SnmpParams())
 
