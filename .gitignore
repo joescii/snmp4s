@@ -15,5 +15,8 @@ src_managed/
 .project
 .settings/
 
+# Intellij IDEA stuff
+*/.idea/
+
 # Snmp4j stuff
 */SNMP4JTestAgent*.cfg
