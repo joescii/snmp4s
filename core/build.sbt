@@ -4,7 +4,7 @@ organization := "org.snmp4s"
 
 version := "0.2.0-SNAPSHOT"
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.3"
 
 scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps", "-language:implicitConversions")
 
