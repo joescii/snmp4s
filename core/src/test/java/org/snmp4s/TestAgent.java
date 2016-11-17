@@ -622,7 +622,7 @@ data: */
     MOTableRow row =
         communityMIB.getSnmpCommunityEntry().createRow(
           new OctetString("public2public").toSubIndex(true), com2sec);
-    communityMIB.getSnmpCommunityEntry().addRow(row);
+    communityMIB.getSnmpCommunityEntry().addRow((SnmpCommunityMIB.SnmpCommunityEntryRow) row);
 //    snmpCommunityMIB.setSourceAddressFiltering(true);
   }
 

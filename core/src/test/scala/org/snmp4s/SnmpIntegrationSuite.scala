@@ -10,19 +10,19 @@
 package org.snmp4s
 
 import java.io.File
-import org.scalatest.{WordSpec, BeforeAndAfter}
-import org.scalatest.matchers.{ShouldMatchers}
+
+import org.scalatest._
 import Mib._
 
-class SnmpIntegrationSuite extends WordSpec with ShouldMatchers with BeforeAndAfter {
-  val snmp = new SnmpSync(SnmpParams())
+class SnmpIntegrationSuite extends WordSpec with Matchers with BeforeAndAfter {
+  val snmp = new SnmpSync(SnmpParams(port = 1234))
   
-  var ta:Option[TestAgent] = None
-  
+  var ta: Option[TestAgent] = None
+
   before {
-    ta = Some(TestAgent.start("127.0.0.1/161"))
+    ta = Some(TestAgent.start("127.0.0.1/1234"))
   }
-  
+
   after {
     ta map ( _.stop )
     ta = None

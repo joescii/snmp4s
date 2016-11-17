@@ -4,16 +4,16 @@ organization := "org.snmp4s"
 
 version := "0.2.0-SNAPSHOT"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.6"
 
-scalacOptions := Seq("-deprecation", "-unchecked")
+scalacOptions := Seq("-target:jvm-1.7", "-deprecation", "-unchecked")
 
-resolvers += "Mibble" at "http://maven.cloudhopper.com/repos/third-party/"
+resolvers += "Mibble" at "http://repo.opennms.org/maven2/"
 
 libraryDependencies ++= Seq(
-  "snmp" % "mibble-parser" % "2.9.2",
-  "snmp" % "mibble-mibs" % "2.9.2",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+  "net.percederberg.mibble" % "mibble" % "2.9.3",
+  "net.percederberg.mibble" % "mibble-mibs" % "2.9.3",
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 )
 
 publishMavenStyle := true

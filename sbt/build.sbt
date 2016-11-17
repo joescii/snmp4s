@@ -6,9 +6,9 @@ organization := "org.snmp4s"
 
 version := "0.2.0-SNAPSHOT"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.6"
 
-scalacOptions := Seq("-deprecation", "-unchecked")
+scalacOptions := Seq("-target:jvm-1.7", "-deprecation", "-unchecked")
 
 libraryDependencies ++= Seq(
   "org.snmp4s" %% "snmp4s-gen" % "0.2.0-SNAPSHOT"

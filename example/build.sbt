@@ -6,9 +6,9 @@ organization := "org.snmp4s"
 
 version := "0.0.1"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.8"
 
-scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-language:postfixOps", "-language:implicitConversions")
+scalacOptions := Seq("-target:jvm-1.8", "-deprecation", "-unchecked", "-feature", "-language:postfixOps", "-language:implicitConversions")
 
 snmp4sSettings
 
