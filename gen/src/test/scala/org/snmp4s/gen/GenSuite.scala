@@ -5,13 +5,11 @@
 
 package org.snmp4s.gen
 
-import org.scalatest.{WordSpec}
-import org.scalatest.matchers.{ShouldMatchers}
 import java.io.File
-import scala.collection.JavaConversions._
-import net.percederberg.mibble._
 
-class GenSuite extends Gen("org.snmp4s.test.mibs") with WordSpec with ShouldMatchers {
+import org.scalatest.{Matchers, WordSpecLike}
+
+class GenSuite extends Gen("org.snmp4s.test.mibs") with WordSpecLike with Matchers {
   "A Generator" should {
     "Load agent mib" in {
       val ms = load(new File("src/test/mibs"))
@@ -36,17 +34,17 @@ class GenSuite extends Gen("org.snmp4s.test.mibs") with WordSpec with ShouldMatc
         "agentppSimCompliance"
       ))
       
-      val simMode = name2oid.get("agentppSimMode").get
+      val simMode = name2oid("agentppSimMode")
     }
     
     "generate code for IF-MIB" in {
       def ifMib = load(BuiltIn.IfMib)
       val name2oid = Util.name2oid(ifMib)
-      val ifMtu = name2oid.get("ifMtu").get
-      val ifDescr = name2oid.get("ifDescr").get
-      val ifSpeed = name2oid.get("ifSpeed").get
-      val ifLastChange = name2oid.get("ifLastChange").get
-      val ifAdminStatus = name2oid.get("ifAdminStatus").get
+      val ifMtu = name2oid("ifMtu")
+      val ifDescr = name2oid("ifDescr")
+      val ifSpeed = name2oid("ifSpeed")
+      val ifLastChange = name2oid("ifLastChange")
+      val ifAdminStatus = name2oid("ifAdminStatus")
       
       code(ifDescr) should equal ("""case object IfDescr extends AccessibleObject[ReadOnly, String](Seq(1,3,6,1,2,1,2,2,1,2), "ifDescr", OctetStringSyntax)""")
       code(ifMtu) should equal ("""case object IfMtu extends AccessibleObject[ReadOnly, Int](Seq(1,3,6,1,2,1,2,2,1,4), "ifMtu", IntegerSyntax)""")
