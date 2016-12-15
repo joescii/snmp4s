@@ -18,7 +18,7 @@ Components
 
 Installation
 ------------
-The latest release is **0.1.0**.  *snmp4s-core* is built against 2.10.1, but *snmp4s-gen* and *snmp4s-sbt* are built against 2.9.2 for use in SBT 0.12.x.
+The latest release is **0.2.0**.  *snmp4s-core* is now built against 2.11, but *snmp4s-gen* and *snmp4s-sbt* are built against 2.10 and down for sbt.
 
 First, you need to add *snmp4s-sbt* as an SBT `Plugin`_ in your project.  Although **SNMP4S** is available from Maven Central, our dependency on `Mibble`_ will require a resolver in addition to the plugin declaration
 
@@ -34,7 +34,7 @@ Secondly, you need to add *snmp4s-core* as a dependency in your project build fi
 
   resolvers += "OO SNMP" at "https://oosnmp.net/dist/release/"
 
-  libraryDependencies += "org.snmp4s" %% "snmp4s-core" % "0.1.0"
+  libraryDependencies += "org.snmp4s" %% "snmp4s-core" % "0.2.0" // Use 0.1.0 if you are still using scala 2.10
 
 Configuration
 -------------
