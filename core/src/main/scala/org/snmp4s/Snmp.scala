@@ -132,6 +132,11 @@ class SnmpSync(params: SnmpParams) {
 
   protected implicit def Snmp4j2Oid(o: OID): Oid = o.getValue()
 
+  def close() = {
+    map.close()
+    snmp.close()
+  }
+
   def get[T](req: GetRequest[T]) = {
     def pack[U](req: GetRequest[U]): (PDU => PDU) =
       req match {
