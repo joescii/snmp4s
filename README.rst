@@ -129,6 +129,8 @@ This can be done today.  See the *example* directory for a working project which
     case Right(walk) => for(VarBind(IfAdminStatus(Seq(i)), Testing) <- walk) yield i
   }
 
+  snmp.close()
+
 Code Examples That Don't Work
 -----------------------
 As important as code that works, is code that doesn't.  These mistakes will not compile

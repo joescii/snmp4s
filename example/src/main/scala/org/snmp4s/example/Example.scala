@@ -25,4 +25,6 @@ object Example extends App {
     case Left(err)   => p("Get failed. "+err)
     case Right(mode) => p(AgentppSimMode(0)+" == "+mode)
   }
+
+  snmp.close()
 }
